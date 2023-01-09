@@ -3,7 +3,7 @@
 [//]: # ([![Tag]&#40;https://img.shields.io/badge/tags-v0.0.2-blue&#41;]&#40;https://github.com/hashkeydid/hashkeydid-js/tags&#41;)
 [![License](https://img.shields.io/badge/License-MIT-yellow)](LICENSE)
 
-Javascript module to work with HashKey DID Protocol.
+TypeScript module to work with HashKey DID Protocol.
 
 ## Installation
 
