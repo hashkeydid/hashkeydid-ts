@@ -1,0 +1,1 @@
+{"version":3,"file":"erc1155Contract.js","sourceRoot":"","sources":["../../../src/contracts/erc1155/erc1155Contract.ts"],"names":[],"mappings":";;;AAAA,iCAA8B;AAC9B,qCAAoC;AAEpC,SAAgB,eAAe,CAAC,GAAW,EAAE,OAAe;IACxD,IAAI,QAAQ,GAAG,IAAI,eAAM,CAAC,SAAS,CAAC,eAAe,CAAC,GAAG,CAAC,CAAC;IACzD,OAAO,IAAI,eAAM,CAAC,QAAQ,CAAC,OAAO,EAAE,oBAAU,EAAE,QAAQ,CAAC,CAAC;AAC9D,CAAC;AAHD,0CAGC"}
