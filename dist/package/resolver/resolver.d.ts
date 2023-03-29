@@ -137,10 +137,9 @@ export declare class Resolver {
      * GetMetadataImageByTokenId returns the image url in metadata queried by tokenId
      *
      * @param {number | BigNumber | string} tokenId eg: 1
-     * @param {CallOverrides} [overrides] Note block number, eg: {"blockTag": 36513266}
      * @return {promise<string>} return metadata avatar url
      */
-    GetMetadataImageByTokenId(tokenId: number | BigNumber | string, overrides?: CallOverrides): Promise<string>;
+    GetMetadataImageByTokenId(tokenId: number | BigNumber | string): Promise<string>;
     /**
      * GetAvatarByDIDName returns the image url in resolver text queried by did name
      *

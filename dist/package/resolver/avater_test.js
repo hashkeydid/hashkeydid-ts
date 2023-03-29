@@ -76,12 +76,10 @@ describe("DID avatar test", function () { return __awaiter(void 0, void 0, void 
             });
         }); }).timeout(10000);
         it("Get DID metadata avatar by tokenId", function () { return __awaiter(void 0, void 0, void 0, function () {
-            var overrides, avatarUrl;
+            var avatarUrl;
             return __generator(this, function (_a) {
                 switch (_a.label) {
-                    case 0:
-                        overrides = { "blockTag": 36513266 };
-                        return [4 /*yield*/, avatar.GetMetadataImageByTokenId(tokenId, overrides)];
+                    case 0: return [4 /*yield*/, avatar.GetMetadataImageByTokenId(tokenId)];
                     case 1:
                         avatarUrl = _a.sent();
                         (0, chai_1.expect)(avatarUrl).equal("https://api.hashkey.id/did/api/file/avatar_3619b3aa-7979-4d10-a1ea-e6725ab8096e.png");

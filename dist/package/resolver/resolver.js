@@ -268,7 +268,7 @@ var Resolver = /** @class */ (function () {
         if (overrides === void 0) { overrides = {}; }
         return __awaiter(this, void 0, void 0, function () {
             return __generator(this, function (_a) {
-                return [2 /*return*/, this.contract.addr(tokenId, coinType)];
+                return [2 /*return*/, this.contract.addr(tokenId, coinType, overrides)];
             });
         });
     };
@@ -283,7 +283,7 @@ var Resolver = /** @class */ (function () {
         if (overrides === void 0) { overrides = {}; }
         return __awaiter(this, void 0, void 0, function () {
             return __generator(this, function (_a) {
-                return [2 /*return*/, this.contract.contentHash(tokenId)];
+                return [2 /*return*/, this.contract.contentHash(tokenId, overrides)];
             });
         });
     };
@@ -298,7 +298,7 @@ var Resolver = /** @class */ (function () {
         if (overrides === void 0) { overrides = {}; }
         return __awaiter(this, void 0, void 0, function () {
             return __generator(this, function (_a) {
-                return [2 /*return*/, this.contract.pubkey(tokenId)];
+                return [2 /*return*/, this.contract.pubkey(tokenId, overrides)];
             });
         });
     };
@@ -314,7 +314,7 @@ var Resolver = /** @class */ (function () {
         if (overrides === void 0) { overrides = {}; }
         return __awaiter(this, void 0, void 0, function () {
             return __generator(this, function (_a) {
-                return [2 /*return*/, this.contract.text(tokenId, key)];
+                return [2 /*return*/, this.contract.text(tokenId, key, overrides)];
             });
         });
     };
@@ -349,11 +349,9 @@ var Resolver = /** @class */ (function () {
      * GetMetadataImageByTokenId returns the image url in metadata queried by tokenId
      *
      * @param {number | BigNumber | string} tokenId eg: 1
-     * @param {CallOverrides} [overrides] Note block number, eg: {"blockTag": 36513266}
      * @return {promise<string>} return metadata avatar url
      */
-    Resolver.prototype.GetMetadataImageByTokenId = function (tokenId, overrides) {
-        if (overrides === void 0) { overrides = {}; }
+    Resolver.prototype.GetMetadataImageByTokenId = function (tokenId) {
         return __awaiter(this, void 0, void 0, function () {
             return __generator(this, function (_a) {
                 return [2 /*return*/, this.GetMetadataImage(tokenId)];

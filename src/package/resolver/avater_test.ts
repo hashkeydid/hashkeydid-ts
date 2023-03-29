@@ -31,8 +31,7 @@ describe("DID avatar test", async () => {
     }).timeout(10000);
 
     it("Get DID metadata avatar by tokenId", async () => {
-        let overrides = {"blockTag": 36513266};
-        let avatarUrl = await avatar.GetMetadataImageByTokenId(tokenId, overrides);
+        let avatarUrl = await avatar.GetMetadataImageByTokenId(tokenId);
         expect(avatarUrl).equal("https://api.hashkey.id/did/api/file/avatar_3619b3aa-7979-4d10-a1ea-e6725ab8096e.png");
     }).timeout(10000);
 
