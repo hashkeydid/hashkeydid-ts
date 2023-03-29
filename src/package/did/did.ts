@@ -1,11 +1,28 @@
 import {BigNumber, ethers} from "ethers";
-import * as setting from "../../config/config"
 import {DIDAbi} from "../../contracts/did/didAbi";
 import {CallOverrides, Overrides} from "@ethersproject/contracts";
 import {TransactionResponse} from "@ethersproject/abstract-provider";
 import {Error} from "../../error/errors";
 import {WalletProvider} from "../../utils/utils";
+import {ChainInfo, ChainList} from "../../config/config";
 
+/**
+ * NewHashKeyDID constructor
+ * @param {string} rpc
+ * @param {WalletProvider} [walletProvider] wallet Provider eg: {privateKey:""} or {mnemonic:""}
+ *
+ * @return {Promise<HashKeyDID>} HashKeyDID
+ */
+export async function NewHashKeyDID(rpc: string, walletProvider?: WalletProvider): Promise<HashKeyDID> {
+    const provider = new ethers.providers.JsonRpcProvider(rpc);
+    const network = await provider.getNetwork()
+    const chainId = network.chainId.toString()
+    if (!ChainList.has(chainId)) {
+        throw Error.ErrNotSupport;
+    }
+    const chain = ChainList.get(chainId)
+    return new HashKeyDID(chain, provider, walletProvider);
+}
 
 export class HashKeyDID {
 
@@ -13,21 +30,27 @@ export class HashKeyDID {
     private contract: ethers.Contract;
     private OnlyReadFlag: boolean = true;
 
+    readonly ContractAddr: string
+
     /**
      * HashKeyDID constructor
+     * @param {ChainInfo} chain
+     * @param {ethers.providers.JsonRpcProvider} provider ethers.providers.JsonRpcProvider
      * @param {WalletProvider} [walletProvider] wallet Provider eg: {privateKey:""} or {mnemonic:""}
      */
-    constructor(walletProvider?: WalletProvider) {
-        this.provider = new ethers.providers.JsonRpcProvider(setting.DefaultPlatONUrl);
+    constructor(chain: ChainInfo, provider: ethers.providers.JsonRpcProvider, walletProvider?: WalletProvider) {
+        this.provider = provider;
+        this.ContractAddr = chain.DIDContract
+
         if (walletProvider === undefined) {
-            this.contract = new ethers.Contract(setting.DefaultDIDContractAddr, DIDAbi, this.provider);
+            this.contract = new ethers.Contract(this.ContractAddr, DIDAbi, this.provider);
         } else {
             this.SetWalletProvider(walletProvider)
         }
     }
 
     ContractAddress(): string {
-        return this.contract.address;
+        return this.ContractAddr;
     }
 
     /**
@@ -50,29 +73,12 @@ export class HashKeyDID {
         }
 
         if (this.contract == undefined) {
-            this.contract = new ethers.Contract(setting.DefaultDIDContractAddr, DIDAbi, wallet);
+            this.contract = new ethers.Contract(this.ContractAddr, DIDAbi, wallet);
         } else {
             this.contract = this.contract.connect(wallet)
         }
 
         this.OnlyReadFlag = false
-    }
-
-    /**
-     * Mint mints did with address
-     *
-     * @param {string} address eg: 20-hex address
-     * @param {string} didName eg: xxxxx.key
-     * @param {Overrides} [overrides] eg: { gasPrice:1000000000 }
-     * @return {Promise<TransactionResponse>} TransactionResponse details
-     * @throws Will throw ErrOnlyRead error if the OnlyReadFlag = true
-     * @throws Will throw a transaction error when SendTransaction fail
-     */
-    async Mint(address: string, didName: string, overrides: Overrides = {}): Promise<TransactionResponse> {
-        if (this.OnlyReadFlag) {
-            throw Error.ErrOnlyRead;
-        }
-        return this.contract.mint(address, didName, overrides);
     }
 
     /**
@@ -116,233 +122,13 @@ export class HashKeyDID {
     }
 
     /**
-     * AddKYC adds KYC information for did
-     *
-     * @param {number | bigint | BigNumber | string} tokenId eg: 12
-     * @param {string} KYCProvider eg: 20-hex address
-     * @param {number | string} KYCId eg: 1
-     * @param {boolean} status eg: true/false
-     * @param {number | string} updateTime eg: 16342343423
-     * @param {number | string} expireTime eg: 16342343423
-     * @param {string} evidence eg: 32-hex string
-     * @param {Overrides} [overrides] eg: { gasPrice:1000000000 }
-     * @return {promise<TransactionResponse>} TransactionResponse details
-     * @throws Will throw ErrOnlyRead error if the OnlyReadFlag = true
-     * @throws Will throw a transaction error when SendTransaction fail
-     */
-    async AddKYC(tokenId: number | bigint | BigNumber | string,
-                 KYCProvider: string,
-                 KYCId: number | string,
-                 status: boolean,
-                 updateTime: number | string,
-                 expireTime: number | string,
-                 evidence: string,
-                 overrides: Overrides = {})
-        : Promise<TransactionResponse> {
-        if (this.OnlyReadFlag) {
-            throw Error.ErrOnlyRead;
-        }
-        return this.contract.addKYC(tokenId, KYCProvider, KYCId, status, updateTime, expireTime, evidence, overrides);
-    }
-
-    /**
-     * SetTokenSupply sets DeedGrain(erc1155) supply number of each tokenId
-     *
-     * @param {string} DGAddr eg: 20-hex address
-     * @param {number | bigint | BigNumber | string} tokenId eg: 1
-     * @param {number | string} supply eg: 16342343423
-     * @param {Overrides} [overrides] eg: { gasPrice:1000000000 }
-     * @return {promise<TransactionResponse>} TransactionResponse details
-     * @throws Will throw ErrOnlyRead error if the OnlyReadFlag = true
-     * @throws Will throw a transaction error when SendTransaction fail
-     */
-    async SetTokenSupply(DGAddr: string,
-                         tokenId: number | bigint | BigNumber | string,
-                         supply: number | string,
-                         overrides: Overrides = {})
-        : Promise<TransactionResponse> {
-        if (this.OnlyReadFlag) {
-            throw Error.ErrOnlyRead;
-        }
-        return this.contract.setTokenSupply(DGAddr, tokenId, supply, overrides);
-    }
-
-    /**
-     * MintDG1 mints DeedGrain contract(erc1155) NFT for addresses
-     *
-     * @param {string} DGAddr eg: 20-hex address
-     * @param {number} tokenId eg: 1
-     * @param {string[]} addrs eg: [20-hex address...]
-     * @param {Overrides} [overrides] eg: { gasPrice:1000000000 }
-     * @return {promise<TransactionResponse>} TransactionResponse details
-     * @throws Will throw ErrOnlyRead error if the OnlyReadFlag = true
-     * @throws Will throw a transaction error when SendTransaction fail
-     */
-    async MintDGV1(DGAddr: string,
-                   tokenId: number | bigint | BigNumber | string,
-                   addrs: string[],
-                   overrides: Overrides = {})
-        : Promise<TransactionResponse> {
-        if (this.OnlyReadFlag) {
-            throw Error.ErrOnlyRead;
-        }
-        return this.contract.mintDGV1(DGAddr, tokenId, addrs, overrides);
-    }
-
-    /**
-     * MintDG2 mints DeedGrain contract(erc1155) NFT for addresses
-     *
-     * @param {string} DGAddr eg: 20-hex address
-     * @param {number} tokenId eg: 1
-     * @param {string[]} addrs eg: [20-hex address...]
-     * @param {string} data eg: ""
-     * @param {Overrides} [overrides] eg: { gasPrice:1000000000 }
-     * @return {promise<TransactionResponse>} TransactionResponse details
-     * @throws Will throw ErrOnlyRead error if the OnlyReadFlag = true
-     * @throws Will throw a transaction error when SendTransaction fail
-     */
-    async MintDGV2(DGAddr: string,
-                   tokenId: number | bigint | BigNumber | string,
-                   addrs: string[],
-                   data: string,
-                   overrides: Overrides = {})
-        : Promise<TransactionResponse> {
-        if (this.OnlyReadFlag) {
-            throw Error.ErrOnlyRead;
-        }
-        return this.contract.mintDGV2(DGAddr, tokenId, addrs, data, overrides);
-    }
-
-    /**
-     * ClaimDG mints DeedGrain contract(erc1155) NFT
-     *
-     * @param {string} DGAddr eg: 20-hex address
-     * @param {number | bigint | BigNumber | string} tokenId eg: 1
-     * @param {string} evidence eg: 32-hex string
-     * @param {Overrides} [overrides] eg: { gasPrice:1000000000 }
-     * @return {promise<TransactionResponse>} TransactionResponse details
-     * @throws Will throw ErrOnlyRead error if the OnlyReadFlag = true
-     * @throws Will throw transaction error when SendTransaction fail
-     */
-    async ClaimDG(DGAddr: string,
-                  tokenId: number | bigint | BigNumber | string,
-                  evidence: string,
-                  overrides: Overrides = {})
-        : Promise<TransactionResponse> {
-        if (this.OnlyReadFlag) {
-            throw Error.ErrOnlyRead;
-        }
-        return this.contract.claimDG(DGAddr, tokenId, evidence);
-    }
-
-    /**
-     * IssueDG issues DeedGrain contract(erc1155)
-     *
-     * @param {string} _name
-     * @param {string} _symbol
-     * @param {string} _baseUri
-     * @param {string} _evidence eg: 32-hex string
-     * @param {boolean} _transferable eg: true/false
-     * @param {Overrides} [overrides] eg: { gasPrice:1000000000 }
-     * @return {promise<TransactionResponse>} TransactionResponse details
-     * @throws Will throw ErrOnlyRead error if the OnlyReadFlag = true
-     * @throws Will throw transaction error when SendTransaction fail
-     */
-    async IssueDG(_name: string,
-                  _symbol: string,
-                  _baseUri: string,
-                  _evidence: string,
-                  _transferable: boolean,
-                  overrides: Overrides = {})
-        : Promise<TransactionResponse> {
-        if (this.OnlyReadFlag) {
-            throw Error.ErrOnlyRead;
-        }
-        return this.contract.issueDG(_name, _symbol, _baseUri, _evidence, _transferable, overrides);
-    }
-
-    /**
-     * SetNFTSupply Only issuer can set NFT supply
-     *
-     * @param {string} NFTAddr
-     * @param {number | string} supply
-     * @param {Overrides} [overrides] eg: { gasPrice:1000000000 }
-     * @return {promise<TransactionResponse>} TransactionResponse details
-     * @throws Will throw ErrOnlyRead error if the OnlyReadFlag = true
-     * @throws Will throw transaction error when SendTransaction fail
-     */
-    async SetNFTSupply(NFTAddr: string, supply: number | string, overrides: Overrides = {})
-        : Promise<TransactionResponse> {
-        if (this.OnlyReadFlag) {
-            throw Error.ErrOnlyRead;
-        }
-        return this.contract.setNFTSupply(NFTAddr, supply);
-    }
-
-    /**
-     * SetNFTBaseUri Only issuer can set NFT's baseuri
-     *
-     * @param {string} NFTAddr DG NFT contract address
-     * @param {string} baseUri All of the NFT's baseuri
-     * @param {Overrides} [overrides] eg: { gasPrice:1000000000 }
-     * @return {promise<TransactionResponse>} TransactionResponse details
-     * @throws Will throw ErrOnlyRead error if the OnlyReadFlag = true
-     * @throws Will throw transaction error when SendTransaction fail
-     */
-    async SetNFTBaseUri(NFTAddr: string, baseUri: string, overrides: Overrides = {})
-        : Promise<TransactionResponse> {
-        if (this.OnlyReadFlag) {
-            throw Error.ErrOnlyRead;
-        }
-        return this.contract.setNFTBaseUri(NFTAddr, baseUri);
-    }
-
-    /**
-     * MintDGNFT Only issuer can airdrop the nft
-     *
-     * @param {string} NFTAddr DG NFT contract address
-     * @param {number | string} sid SeriesId
-     * @param {string[]} addrs All the users address to airdrop
-     * @param {Overrides} [overrides] eg: { gasPrice:1000000000 }
-     * @return {promise<TransactionResponse>} TransactionResponse details
-     * @throws Will throw ErrOnlyRead error if the OnlyReadFlag = true
-     * @throws Will throw transaction error when SendTransaction fail
-     */
-    async MintDGNFT(NFTAddr: string, sid: number | string, addrs: string[], overrides: Overrides = {})
-        : Promise<TransactionResponse> {
-        if (this.OnlyReadFlag) {
-            throw Error.ErrOnlyRead;
-        }
-        return this.contract.mintDGNFT(NFTAddr, sid, addrs);
-    }
-
-    /**
-     * ClaimDGNFT User claim the nft
-     *
-     * @param {string} NFTAddr DG NFT address
-     * @param {number | string} sid SeriesId
-     * @param {string} evidence Signature
-     * @param {Overrides} [overrides] eg: { gasPrice:1000000000 }
-     * @return {promise<TransactionResponse>} TransactionResponse details
-     * @throws Will throw ErrOnlyRead error if the OnlyReadFlag = true
-     * @throws Will throw transaction error when SendTransaction fail
-     */
-    async ClaimDGNFT(NFTAddr: string, sid: number | string, evidence: string, overrides: Overrides = {})
-        : Promise<TransactionResponse> {
-        if (this.OnlyReadFlag) {
-            throw Error.ErrOnlyRead;
-        }
-        return this.contract.claimDGNFT(NFTAddr, sid, evidence, overrides);
-    }
-
-    /**
      * Did2TokenId returns tokenId by DID
      *
      * @param {string} didName eg: hee.key
      * @param {CallOverrides} [overrides] Note block number, eg: {"blockTag": 36513266}
      * @return {promise<string>} tokenId
      */
-    async Did2TokenId(didName: string, overrides: CallOverrides = {}): Promise<string> {
+    async Did2TokenId(didName: string, overrides: CallOverrides = {}): Promise<BigNumber> {
         return this.contract.did2TokenId(didName, overrides);
     }
 
@@ -472,15 +258,5 @@ export class HashKeyDID {
                               overrides: CallOverrides = {})
         : Promise<string> {
         return this.contract.tokenOfOwnerByIndex(address, index, overrides);
-    }
-
-    /**
-     * TotalSupply See {IERC721Enumerable-totalSupply}.
-     *
-     * @param {CallOverrides} [overrides] Note block number, eg: {"blockTag": 36513266}
-     * @return {promise<string>} totalSupply number
-     */
-    async TotalSupply(overrides: CallOverrides = {}): Promise<string> {
-        return this.contract.totalSupply(overrides);
     }
 }

@@ -37,28 +37,35 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 var chai_1 = require("chai");
-var avatar_1 = require("./avatar");
+var resolver_1 = require("./resolver");
 describe("DID avatar test", function () { return __awaiter(void 0, void 0, void 0, function () {
     var avatar, didName, tokenId, nft721, nft1155;
     return __generator(this, function (_a) {
-        avatar = new avatar_1.Avatar();
         before(function () { return __awaiter(void 0, void 0, void 0, function () {
             return __generator(this, function (_a) {
-                didName = "herro.key";
-                tokenId = 13756;
-                nft721 = "nft:1:721:0x394E3d3044fC89fCDd966D3cb35Ac0B32B0Cda91:8619";
-                nft1155 = "nft:1:1155:0xf4dd946d1406e215a87029db56c69e1bcf3e1773:1";
-                return [2 /*return*/];
+                switch (_a.label) {
+                    case 0: return [4 /*yield*/, (0, resolver_1.NewHashKeyDIDResolver)("https://openapi2.platon.network/rpc")];
+                    case 1:
+                        avatar = _a.sent();
+                        didName = "herro.key";
+                        tokenId = 13756;
+                        nft721 = "nft:1:721:0x394E3d3044fC89fCDd966D3cb35Ac0B32B0Cda91:8619";
+                        nft1155 = "nft:1:1155:0xf4dd946d1406e215a87029db56c69e1bcf3e1773:1";
+                        return [2 /*return*/];
+                }
             });
         }); });
         it("Get DID metadata avatar by did", function () { return __awaiter(void 0, void 0, void 0, function () {
-            var avatarUrl, overrides;
+            var err1, overrides, avatarUrl;
             return __generator(this, function (_a) {
                 switch (_a.label) {
-                    case 0: return [4 /*yield*/, avatar.GetMetadataImageByDIDName(didName, { blockTag: 36513265 })];
+                    case 0: return [4 /*yield*/, avatar.GetMetadataImageByDIDName(didName, { blockTag: 36513265 })
+                            .catch(function (err) {
+                            err1 = err;
+                        })];
                     case 1:
-                        avatarUrl = _a.sent();
-                        (0, chai_1.expect)(avatarUrl).equal("this did name has not been claimed");
+                        _a.sent();
+                        (0, chai_1.expect)(err1).equal("this did name has not been claimed");
                         overrides = { blockTag: 36513266 };
                         return [4 /*yield*/, avatar.GetMetadataImageByDIDName(didName, overrides)];
                     case 2:

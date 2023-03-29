@@ -21,13 +21,13 @@ TypeScript module to work with HashKey DID Protocol.
 with [HashKey DID](https://github.com/hashkeydid/hashkeydid-contracts) Contracts.
 
 ```typescript
-import {HashKeyDID} from "hashkeydid";
+import {NewHashKeyDID} from "hashkeydid";
 
-HashKeyDIDOnlyRead = new HashKeyDID();
+HashKeyDIDOnlyRead = await NewHashKeyDID("rpc url");
 
-HashKeyDIDByPrivateKey = new HashKeyDID({privateKey: "private_key"});
+HashKeyDIDByPrivateKey = await NewHashKeyDID("rpc url", {privateKey: "private_key"});
 
-HashKeyDIDByMnemonic = new HashKeyDID({mnemonic: "mnemonic"});
+HashKeyDIDByMnemonic = await NewHashKeyDID("rpc url", {mnemonic: "mnemonic"});
 ```
 
 ### 2.Resolver
@@ -36,25 +36,12 @@ HashKeyDIDByMnemonic = new HashKeyDID({mnemonic: "mnemonic"});
 with [HashKey_DID_Resolver](https://github.com/hashkeydid/hashkeydid-resolver) Contracts.
 
 ```typescript
-import {Resolver} from "hashkeydid";
+import {NewHashKeyDIDResolver} from "hashkeydid";
 
-ResolverOnlyRead = new Resolver();
+ResolverOnlyRead = await NewHashKeyDIDResolver("rpc url");
 
-ResolverByPrivateKey = new Resolver({privateKey: "private_key"});
+ResolverByPrivateKey = await NewHashKeyDIDResolver("rpc url", {privateKey: "private_key"});
 
-ResolverByMnemonic = new Resolver({mnemonic: "mnemonic"});
-```
-
-## Advanced
-
-### 1.Avatar
-
-`Avatar` is an advanced object for the Avatar module in the HashKey DID project, 
-used to obtain and parse DID Avatar URI.
-
-```typescript
-import {Avatar} from "hashkeydid";
-
-Avatar = new Avatar();
+ResolverByMnemonic = await NewHashKeyDIDResolver("rpc url", {mnemonic: "mnemonic"});
 ```
 

@@ -2,29 +2,32 @@ import { BigNumber, ethers } from "ethers";
 import { WalletProvider } from "../../utils/utils";
 import { CallOverrides, Overrides } from "@ethersproject/contracts";
 import { TransactionResponse } from "@ethersproject/abstract-provider";
+import { ChainInfo } from "../../config/config";
+export declare class DIDImage {
+    image: string;
+}
+export declare class DIDMateData implements DIDImage {
+    description: string;
+    image: string;
+    name: string;
+}
+export declare function NewHashKeyDIDResolver(rpc: string, walletProvider?: WalletProvider): Promise<Resolver>;
 export declare class Resolver {
     readonly provider: ethers.providers.JsonRpcProvider;
     private contract;
     private OnlyReadFlag;
-    private hashkeyDID;
+    private didContract;
+    readonly ContractAddr: string;
     /**
-     * Resolver constructor
+     * HashKeyDIDResolver constructor
+     * @param {ChainInfo} chain
+     * @param {ethers.providers.JsonRpcProvider} provider ethers.providers.JsonRpcProvider
      * @param {WalletProvider} [walletProvider] wallet Provider eg: {privateKey:""} or {mnemonic:""}
      */
-    constructor(walletProvider?: WalletProvider);
+    constructor(chain: ChainInfo, provider: ethers.providers.JsonRpcProvider, walletProvider?: WalletProvider);
     ContractAddress(): string;
     WalletAddress(): Promise<string>;
     SetWalletProvider(walletProvider: WalletProvider): void;
-    /**
-     * SetReverse sets the reverse status for address
-     *
-     * @param {boolean} status
-     * @param {Overrides} [overrides] eg: { gasPrice:1000000000 }
-     * @return {Promise<TransactionResponse>} TransactionResponse details
-     * @throws Will throw ErrOnlyRead error if the OnlyReadFlag = true
-     * @throws Will throw a transaction error when SendTransaction fail
-     */
-    SetReverse(status: boolean, overrides?: Overrides): Promise<TransactionResponse>;
     /**
      * SetBlockChainAddress sets blockchain addresses
      *
@@ -122,4 +125,81 @@ export declare class Resolver {
      * @return {promise<string>} string
      */
     Text(tokenId: number | bigint | BigNumber | string, key: string, overrides?: CallOverrides): Promise<string>;
+    /**
+     * GetMetadataImageByDIDName returns the image url in metadata queried by did name
+     *
+     * @param {string} didName eg: herro.key
+     * @param {CallOverrides} [overrides] Note block number, eg: {blockTag: 36513266}
+     * @return {promise<string>} return avatar url or Error
+     */
+    GetMetadataImageByDIDName(didName: string, overrides?: CallOverrides): Promise<string>;
+    /**
+     * GetMetadataImageByTokenId returns the image url in metadata queried by tokenId
+     *
+     * @param {number | BigNumber | string} tokenId eg: 1
+     * @param {CallOverrides} [overrides] Note block number, eg: {"blockTag": 36513266}
+     * @return {promise<string>} return metadata avatar url
+     */
+    GetMetadataImageByTokenId(tokenId: number | BigNumber | string, overrides?: CallOverrides): Promise<string>;
+    /**
+     * GetAvatarByDIDName returns the image url in resolver text queried by did name
+     *
+     * @param {string} didName eg: herro.key
+     * @param {string} [chainRpc] eg: https://eth-mainnet.nodereal.io/v1/1659dfb40aa24bbb8153a677b98064d7
+     * @param {CallOverrides} [overrides] Note block number, eg: {"blockTag": 36513266}
+     * @return {promise<string>} return metadata avatar url
+     */
+    GetAvatarByDIDName(didName: string, overrides?: CallOverrides, chainRpc?: string): Promise<string>;
+    /**
+     * GetAvatarByTokenId returns the image url in resolver text queried by tokenId
+     *
+     * @param {number | bigint | BigNumber | string} tokenId eg: 1
+     * @param {string} [chainRpc] eg: "https://eth-mainnet.nodereal.io/v1/1659dfb40aa24bbb8153a677b98064d7"
+     * @param {CallOverrides} [overrides] Note block number, eg: {"blockTag": 36513266}
+     * @return {promise<string>} return avatar url
+     */
+    GetAvatarByTokenId(tokenId: number | bigint | BigNumber | string, overrides?: CallOverrides, chainRpc?: string): Promise<string>;
+    /**
+     * AvatarFormatText2AvatarUrl convert avatar format text in resolver to an image url
+     *
+     * @param {string} formatText eg: nft:1:721:0x394E3d3044fC89fCDd966D3cb35Ac0B32B0Cda91:8619
+     * @param {string} [chainRpc] eg: "https://eth-mainnet.nodereal.io/v1/1659dfb40aa24bbb8153a677b98064d7"
+     * @return {promise<string>} return image url
+     */
+    AvatarFormatText2AvatarUrl(formatText: string, chainRpc?: string): Promise<string>;
+    /**
+     * getImageFromTokenURI parses tokenURI's info to get the image url
+     *
+     * @param {string} tokenURI eg: https://arweave.net/qMWNCxhao7TGWnj8axed0YzLU1gx8-5yP1W1gBHNVFg
+     * @return {promise<string>} return image url
+     */
+    GetImageFromTokenURI(tokenURI: string): Promise<string>;
+    /**
+     * GetMetadata returns the Metadata by tokenId
+     *
+     * @param {number | bigint | BigNumber | string} tokenId eg: 1
+     * @return {Promise<DIDMateData>} response json format
+     */
+    GetMetadata(tokenId: number | bigint | BigNumber | string): Promise<DIDMateData>;
+    /**
+     * GetMetadataImage returns the image url in metadata by tokenId
+     *
+     * @param {number | bigint | BigNumber | string} tokenId eg: 1
+     * @return {promise<string>} return metadata image url
+     */
+    GetMetadataImage(tokenId: number | bigint | BigNumber | string): Promise<string>;
+    /**
+     * GetMetadataName returns the name in metadata by tokenId
+     *
+     * @param {number | bigint | BigNumber | string} tokenId eg: 1
+     * @return {promise<string>} return metadata name
+     */
+    GetMetadataName(tokenId: number | bigint | BigNumber | string): Promise<string>;
+    /**
+     * GetMetadataDescription returns the description in metadata by tokenId
+     *
+     * @param {number | bigint | BigNumber | string} tokenId eg: 1
+     * @return {promise<string>} return metadata description
+     */
+    GetMetadataDescription(tokenId: number | bigint | BigNumber | string): Promise<string>;
 }

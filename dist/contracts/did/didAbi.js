@@ -130,31 +130,6 @@ exports.DIDAbi = [
         "anonymous": false,
         "inputs": [
             {
-                "indexed": true,
-                "internalType": "address",
-                "name": "addr",
-                "type": "address"
-            },
-            {
-                "indexed": false,
-                "internalType": "string",
-                "name": "did",
-                "type": "string"
-            },
-            {
-                "indexed": true,
-                "internalType": "uint256",
-                "name": "tokenId",
-                "type": "uint256"
-            }
-        ],
-        "name": "Claim",
-        "type": "event"
-    },
-    {
-        "anonymous": false,
-        "inputs": [
-            {
                 "indexed": false,
                 "internalType": "uint8",
                 "name": "version",
@@ -297,37 +272,44 @@ exports.DIDAbi = [
                 "type": "uint256"
             },
             {
-                "internalType": "address",
-                "name": "KYCProvider",
-                "type": "address"
+                "internalType": "address[]",
+                "name": "KYCProviders",
+                "type": "address[]"
             },
             {
-                "internalType": "uint256",
-                "name": "KYCId",
-                "type": "uint256"
+                "internalType": "uint256[]",
+                "name": "KYCIds",
+                "type": "uint256[]"
             },
             {
-                "internalType": "bool",
-                "name": "status",
-                "type": "bool"
+                "components": [
+                    {
+                        "internalType": "bool",
+                        "name": "status",
+                        "type": "bool"
+                    },
+                    {
+                        "internalType": "uint256",
+                        "name": "updateTime",
+                        "type": "uint256"
+                    },
+                    {
+                        "internalType": "uint256",
+                        "name": "expireTime",
+                        "type": "uint256"
+                    }
+                ],
+                "internalType": "struct DidV2Storage.KYCInfo[]",
+                "name": "KYCInfos",
+                "type": "tuple[]"
             },
             {
-                "internalType": "uint256",
-                "name": "updateTime",
-                "type": "uint256"
-            },
-            {
-                "internalType": "uint256",
-                "name": "expireTime",
-                "type": "uint256"
-            },
-            {
-                "internalType": "bytes",
-                "name": "evidence",
-                "type": "bytes"
+                "internalType": "bytes[]",
+                "name": "evidences",
+                "type": "bytes[]"
             }
         ],
-        "name": "addKYC",
+        "name": "addKYCs",
         "outputs": [],
         "stateMutability": "nonpayable",
         "type": "function"
@@ -404,14 +386,29 @@ exports.DIDAbi = [
     {
         "inputs": [
             {
+                "internalType": "uint256",
+                "name": "expiredTimestamp",
+                "type": "uint256"
+            },
+            {
                 "internalType": "string",
                 "name": "did",
+                "type": "string"
+            },
+            {
+                "internalType": "bytes",
+                "name": "evidence",
+                "type": "bytes"
+            },
+            {
+                "internalType": "string",
+                "name": "avatar",
                 "type": "string"
             }
         ],
         "name": "claim",
         "outputs": [],
-        "stateMutability": "nonpayable",
+        "stateMutability": "payable",
         "type": "function"
     },
     {
@@ -551,6 +548,19 @@ exports.DIDAbi = [
     {
         "inputs": [],
         "name": "didMinter",
+        "outputs": [
+            {
+                "internalType": "address",
+                "name": "",
+                "type": "address"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [],
+        "name": "didSync",
         "outputs": [
             {
                 "internalType": "address",
@@ -788,8 +798,23 @@ exports.DIDAbi = [
                 "type": "address"
             },
             {
+                "internalType": "uint256",
+                "name": "expiredTimestamp",
+                "type": "uint256"
+            },
+            {
                 "internalType": "string",
                 "name": "did",
+                "type": "string"
+            },
+            {
+                "internalType": "bytes",
+                "name": "evidence",
+                "type": "bytes"
+            },
+            {
+                "internalType": "string",
+                "name": "avatar",
                 "type": "string"
             }
         ],
@@ -873,6 +898,71 @@ exports.DIDAbi = [
         "type": "function"
     },
     {
+        "inputs": [
+            {
+                "internalType": "uint256",
+                "name": "tokenId",
+                "type": "uint256"
+            },
+            {
+                "internalType": "address",
+                "name": "user",
+                "type": "address"
+            },
+            {
+                "internalType": "string",
+                "name": "did",
+                "type": "string"
+            },
+            {
+                "internalType": "string",
+                "name": "avatar",
+                "type": "string"
+            },
+            {
+                "internalType": "address[]",
+                "name": "KYCProviders",
+                "type": "address[]"
+            },
+            {
+                "internalType": "uint256[]",
+                "name": "KYCIds",
+                "type": "uint256[]"
+            },
+            {
+                "components": [
+                    {
+                        "internalType": "bool",
+                        "name": "status",
+                        "type": "bool"
+                    },
+                    {
+                        "internalType": "uint256",
+                        "name": "updateTime",
+                        "type": "uint256"
+                    },
+                    {
+                        "internalType": "uint256",
+                        "name": "expireTime",
+                        "type": "uint256"
+                    }
+                ],
+                "internalType": "struct DidV2Storage.KYCInfo[]",
+                "name": "KYCInfos",
+                "type": "tuple[]"
+            },
+            {
+                "internalType": "bytes[]",
+                "name": "evidences",
+                "type": "bytes[]"
+            }
+        ],
+        "name": "mintDidLZ",
+        "outputs": [],
+        "stateMutability": "nonpayable",
+        "type": "function"
+    },
+    {
         "inputs": [],
         "name": "name",
         "outputs": [
@@ -936,6 +1026,19 @@ exports.DIDAbi = [
         "type": "function"
     },
     {
+        "inputs": [],
+        "name": "resolver",
+        "outputs": [
+            {
+                "internalType": "address",
+                "name": "",
+                "type": "address"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
         "inputs": [
             {
                 "internalType": "address",
@@ -977,7 +1080,7 @@ exports.DIDAbi = [
             },
             {
                 "internalType": "bytes",
-                "name": "_data",
+                "name": "data",
                 "type": "bytes"
             }
         ],
@@ -1047,6 +1150,19 @@ exports.DIDAbi = [
         "inputs": [
             {
                 "internalType": "address",
+                "name": "_didSync",
+                "type": "address"
+            }
+        ],
+        "name": "setDidSync",
+        "outputs": [],
+        "stateMutability": "nonpayable",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "internalType": "address",
                 "name": "NFTAddr",
                 "type": "address"
             },
@@ -1075,6 +1191,19 @@ exports.DIDAbi = [
             }
         ],
         "name": "setNFTSupply",
+        "outputs": [],
+        "stateMutability": "nonpayable",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "internalType": "address",
+                "name": "_resolver",
+                "type": "address"
+            }
+        ],
+        "name": "setResolverAddr",
         "outputs": [],
         "stateMutability": "nonpayable",
         "type": "function"
@@ -1326,6 +1455,17 @@ exports.DIDAbi = [
         ],
         "stateMutability": "pure",
         "type": "function"
+    },
+    {
+        "inputs": [],
+        "name": "withdraw",
+        "outputs": [],
+        "stateMutability": "nonpayable",
+        "type": "function"
+    },
+    {
+        "stateMutability": "payable",
+        "type": "receive"
     }
 ];
 //# sourceMappingURL=didAbi.js.map

@@ -1,19 +1,18 @@
 import {expect} from "chai";
-import {HashKeyDID} from "./did"
+import {HashKeyDID, NewHashKeyDID} from "./did"
 
 describe("hashkeyDID test", async () => {
-    let did;
+    let did: HashKeyDID;
 
     let didName;
     let tokenId;
     let authorizedAddr;
 
     before(async () => {
-        did = new HashKeyDID({privateKey: "f3db6526e98e79c7bd1dcadfa15a01e1de5c7293669608f90b92305812222222"});
+        did = await NewHashKeyDID("https://openapi2.platon.network/rpc");
         tokenId = 13756;
         didName = "herro.key";
         authorizedAddr = "0xa060C1C3807059027Ca141EFb63f19E12e0cBF0c";
-
     })
 
     it("Get addr by DID name", async () => {
@@ -64,6 +63,7 @@ describe("hashkeyDID test", async () => {
 
     it("Get did by tokenId", async () => {
         let result = await did.Did2TokenId(didName);
-        expect(result).equal(tokenId);
+        expect(result.toNumber()).equal(tokenId);
     }).timeout(10000);
+
 })

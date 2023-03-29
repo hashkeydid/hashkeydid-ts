@@ -159,6 +159,19 @@ exports.ResolverAbi = [
         "type": "function"
     },
     {
+        "inputs": [],
+        "name": "did",
+        "outputs": [
+            {
+                "internalType": "address",
+                "name": "",
+                "type": "address"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
         "inputs": [
             {
                 "internalType": "address",
@@ -245,6 +258,24 @@ exports.ResolverAbi = [
                 "type": "uint256"
             },
             {
+                "internalType": "string",
+                "name": "value",
+                "type": "string"
+            }
+        ],
+        "name": "setAvatar",
+        "outputs": [],
+        "stateMutability": "nonpayable",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "internalType": "uint256",
+                "name": "tokenId",
+                "type": "uint256"
+            },
+            {
                 "internalType": "bytes",
                 "name": "cid",
                 "type": "bytes"
@@ -274,19 +305,6 @@ exports.ResolverAbi = [
             }
         ],
         "name": "setPubkey",
-        "outputs": [],
-        "stateMutability": "nonpayable",
-        "type": "function"
-    },
-    {
-        "inputs": [
-            {
-                "internalType": "bool",
-                "name": "isReverse",
-                "type": "bool"
-            }
-        ],
-        "name": "setReverse",
         "outputs": [],
         "stateMutability": "nonpayable",
         "type": "function"

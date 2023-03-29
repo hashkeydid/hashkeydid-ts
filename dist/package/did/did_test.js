@@ -43,11 +43,15 @@ describe("hashkeyDID test", function () { return __awaiter(void 0, void 0, void 
     return __generator(this, function (_a) {
         before(function () { return __awaiter(void 0, void 0, void 0, function () {
             return __generator(this, function (_a) {
-                did = new did_1.HashKeyDID({ privateKey: "f3db6526e98e79c7bd1dcadfa15a01e1de5c7293669608f90b92305812222222" });
-                tokenId = 13756;
-                didName = "herro.key";
-                authorizedAddr = "0xa060C1C3807059027Ca141EFb63f19E12e0cBF0c";
-                return [2 /*return*/];
+                switch (_a.label) {
+                    case 0: return [4 /*yield*/, (0, did_1.NewHashKeyDID)("https://openapi2.platon.network/rpc")];
+                    case 1:
+                        did = _a.sent();
+                        tokenId = 13756;
+                        didName = "herro.key";
+                        authorizedAddr = "0xa060C1C3807059027Ca141EFb63f19E12e0cBF0c";
+                        return [2 /*return*/];
+                }
             });
         }); });
         it("Get addr by DID name", function () { return __awaiter(void 0, void 0, void 0, function () {
@@ -161,7 +165,7 @@ describe("hashkeyDID test", function () { return __awaiter(void 0, void 0, void 
                     case 0: return [4 /*yield*/, did.Did2TokenId(didName)];
                     case 1:
                         result = _a.sent();
-                        (0, chai_1.expect)(result).equal(tokenId);
+                        (0, chai_1.expect)(result.toNumber()).equal(tokenId);
                         return [2 /*return*/];
                 }
             });
