@@ -1,6 +1,6 @@
 import {expect} from "chai";
-import {NewHashKeyDIDResolver, Resolver} from "./resolver";
-import {Error} from "../../error/errors"
+import {Error} from "../error/errors"
+import {HashKeyDID, NewHashKeyDID} from "./did";
 
 describe("DIDResolver test", async () => {
     let address
@@ -8,10 +8,10 @@ describe("DIDResolver test", async () => {
     let tokenId;
     let authorizedAddr;
 
-    let resolver: Resolver;
+    let resolver: HashKeyDID;
 
     before(async () => {
-        resolver = await NewHashKeyDIDResolver("https://openapi2.platon.network/rpc",{privateKey:"f3db6526e98e79c7bd1dcadfa15a01e1de5c7293669608f90b9230581047cbc4"});
+        resolver = await NewHashKeyDID("https://openapi2.platon.network/rpc",{privateKey:"f3db6526e98e79c7bd1dcadfa15a01e1de5c7293669608f90b9230581047cbc4"});
         tokenId = 13756;
         didName = "herro.key";
         authorizedAddr = "0xa060C1C3807059027Ca141EFb63f19E12e0cBF0c";

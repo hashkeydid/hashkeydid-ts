@@ -1,5 +1,4 @@
-import {HashKeyDID, NewHashKeyDID} from "./package/did/did";
-import {Resolver, DIDImage, DIDMateData, NewHashKeyDIDResolver} from "./package/resolver/resolver";
+import {HashKeyDID, NewHashKeyDID, DIDImage, DIDMateData} from "./package/did";
 import {Error} from "./error/errors"
 import {WalletProvider} from "./utils/utils"
 
@@ -11,8 +10,5 @@ export {
     DIDMateData,
 
     HashKeyDID,
-    Resolver,
-
     NewHashKeyDID,
-    NewHashKeyDIDResolver
 }

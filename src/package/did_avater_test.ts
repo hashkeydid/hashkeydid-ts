@@ -1,8 +1,8 @@
 import {expect} from "chai";
-import {NewHashKeyDIDResolver, Resolver} from "./resolver";
+import {HashKeyDID, NewHashKeyDID} from "./did";
 
 describe("DID avatar test", async () => {
-    let avatar: Resolver;
+    let avatar: HashKeyDID;
 
     let didName;
     let tokenId;
@@ -10,7 +10,7 @@ describe("DID avatar test", async () => {
     let nft1155;
 
     before(async () => {
-        avatar = await NewHashKeyDIDResolver("https://openapi2.platon.network/rpc")
+        avatar = await NewHashKeyDID("https://openapi2.platon.network/rpc")
         didName = "herro.key";
         tokenId = 13756;
         nft721 = "nft:1:721:0x394E3d3044fC89fCDd966D3cb35Ac0B32B0Cda91:8619";
