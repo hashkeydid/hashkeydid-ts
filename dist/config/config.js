@@ -1,11 +1,11 @@
 "use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.ChainList = exports.ChainRPCMap = exports.Address0 = void 0;
 // config
 // export const DefaultPlatONUrl = "https://openapi2.platon.network/rpc";
 // export const DefaultDIDContractAddr = "0x7fDd3f96cBDE51737A9E24b461E7E92A057C3BBf";
 // export const DefaultDIDResolverContractAddr = "0x606729294604A1c71f4BFc001894E4f8095Ec2eF";
-exports.Address0 = "0x0000000000000000000000000000000000000000";
+// export const Address0 = "0x0000000000000000000000000000000000000000"
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.ChainList = exports.ChainRPCMap = void 0;
 exports.ChainRPCMap = new Map([
     ["1", "https://eth-mainnet.nodereal.io/v1/1659dfb40aa24bbb8153a677b98064d7"],
     ["137", "https://matic-mainnet-archive-rpc.bwarelabs.com"],

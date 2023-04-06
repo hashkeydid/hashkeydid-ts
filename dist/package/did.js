@@ -38,7 +38,6 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.HashKeyDID = exports.NewHashKeyDID = exports.DIDMateData = exports.DIDImage = void 0;
 var ethers_1 = require("ethers");
-var setting = require("../config/config");
 var didAbi_1 = require("../contracts/did/didAbi");
 var errors_1 = require("../error/errors");
 var config_1 = require("../config/config");
@@ -96,17 +95,21 @@ var HashKeyDID = /** @class */ (function () {
     function HashKeyDID(chain, provider, walletProvider) {
         this.OnlyReadFlag = true;
         this.provider = provider;
-        this.ContractAddr = chain.DIDContract;
+        this.didContractAddr = chain.DIDContract;
+        this.resolveContractAddr = chain.ResolveContract;
         if (walletProvider === undefined) {
-            this.didContract = new ethers_1.ethers.Contract(this.ContractAddr, didAbi_1.DIDAbi, this.provider);
-            this.resolverContract = new ethers_1.ethers.Contract(this.ContractAddr, resolverAbi_1.ResolverAbi, this.provider);
+            this.didContract = new ethers_1.ethers.Contract(this.didContractAddr, didAbi_1.DIDAbi, this.provider);
+            this.resolverContract = new ethers_1.ethers.Contract(this.resolveContractAddr, resolverAbi_1.ResolverAbi, this.provider);
         }
         else {
             this.SetWalletProvider(walletProvider);
         }
     }
-    HashKeyDID.prototype.ContractAddress = function () {
-        return this.ContractAddr;
+    HashKeyDID.prototype.DIDContractAddress = function () {
+        return this.didContractAddr;
+    };
+    HashKeyDID.prototype.ResolveContractAddress = function () {
+        return this.resolveContractAddr;
     };
     /**
      * WalletAddress get signer address when OnlyReadFlag is false
@@ -132,8 +135,8 @@ var HashKeyDID = /** @class */ (function () {
             throw "empty";
         }
         if (this.didContract == undefined) {
-            this.didContract = new ethers_1.ethers.Contract(this.ContractAddr, didAbi_1.DIDAbi, wallet);
-            this.resolverContract = new ethers_1.ethers.Contract(this.ContractAddr, resolverAbi_1.ResolverAbi, wallet);
+            this.didContract = new ethers_1.ethers.Contract(this.didContractAddr, didAbi_1.DIDAbi, wallet);
+            this.resolverContract = new ethers_1.ethers.Contract(this.resolveContractAddr, resolverAbi_1.ResolverAbi, wallet);
         }
         else {
             this.didContract = this.didContract.connect(wallet);
@@ -681,7 +684,7 @@ var HashKeyDID = /** @class */ (function () {
                             return [2 /*return*/, errors_1.Error.ErrInvalidAvatarText];
                         }
                         if (chainRpc == undefined) {
-                            chainRpc = setting.ChainRPCMap.get(texts[1]);
+                            chainRpc = config_1.ChainRPCMap.get(texts[1]);
                             if (chainRpc == "") {
                                 return [2 /*return*/, errors_1.Error.ErrInvalidAvatarText];
                             }

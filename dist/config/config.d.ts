@@ -1,4 +1,3 @@
-export declare const Address0 = "0x0000000000000000000000000000000000000000";
 export declare const ChainRPCMap: Map<string, string>;
 export interface ChainInfo {
     ChainName: string;

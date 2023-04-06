@@ -1,11 +1,10 @@
 import {BigNumber, ethers} from "ethers";
-import * as setting from "../config/config";
 import {DIDAbi} from "../contracts/did/didAbi";
 import {CallOverrides, Overrides} from "@ethersproject/contracts";
 import {TransactionResponse} from "@ethersproject/abstract-provider";
 import {Error} from "../error/errors";
 import {WalletProvider} from "../utils/utils";
-import {ChainInfo, ChainList} from "../config/config";
+import {ChainInfo, ChainList, ChainRPCMap} from "../config/config";
 import {ResolverAbi} from "../contracts/resolver/resolverAbi";
 import axios from "axios";
 import {ERC721Contract} from "../contracts/erc721/erc721Contract";
@@ -46,7 +45,8 @@ export class HashKeyDID {
     private resolverContract: ethers.Contract;
     private OnlyReadFlag: boolean = true;
 
-    readonly ContractAddr: string
+    readonly didContractAddr: string
+    readonly resolveContractAddr: string
 
     /**
      * HashKeyDID constructor
@@ -56,18 +56,23 @@ export class HashKeyDID {
      */
     constructor(chain: ChainInfo, provider: ethers.providers.JsonRpcProvider, walletProvider?: WalletProvider) {
         this.provider = provider;
-        this.ContractAddr = chain.DIDContract
+        this.didContractAddr = chain.DIDContract
+        this.resolveContractAddr = chain.ResolveContract
 
         if (walletProvider === undefined) {
-            this.didContract = new ethers.Contract(this.ContractAddr, DIDAbi, this.provider);
-            this.resolverContract = new ethers.Contract(this.ContractAddr, ResolverAbi, this.provider);
+            this.didContract = new ethers.Contract(this.didContractAddr, DIDAbi, this.provider);
+            this.resolverContract = new ethers.Contract(this.resolveContractAddr, ResolverAbi, this.provider);
         } else {
             this.SetWalletProvider(walletProvider)
         }
     }
 
-    ContractAddress(): string {
-        return this.ContractAddr;
+    DIDContractAddress(): string {
+        return this.didContractAddr;
+    }
+
+    ResolveContractAddress(): string {
+        return this.resolveContractAddr;
     }
 
     /**
@@ -90,8 +95,8 @@ export class HashKeyDID {
         }
 
         if (this.didContract == undefined) {
-            this.didContract = new ethers.Contract(this.ContractAddr, DIDAbi, wallet);
-            this.resolverContract = new ethers.Contract(this.ContractAddr, ResolverAbi, wallet);
+            this.didContract = new ethers.Contract(this.didContractAddr, DIDAbi, wallet);
+            this.resolverContract = new ethers.Contract(this.resolveContractAddr, ResolverAbi, wallet);
         } else {
             this.didContract = this.didContract.connect(wallet)
             this.resolverContract = this.resolverContract.connect(wallet)
@@ -281,6 +286,7 @@ export class HashKeyDID {
 
     /*************************************************/
     /********************resolver*********************/
+
     /*************************************************/
 
     /**
@@ -540,7 +546,7 @@ export class HashKeyDID {
                 }
 
                 if (chainRpc == undefined) {
-                    chainRpc = setting.ChainRPCMap.get(texts[1]);
+                    chainRpc = ChainRPCMap.get(texts[1]);
                     if (chainRpc == "") {
                         return Error.ErrInvalidAvatarText;
                     }

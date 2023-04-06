@@ -24,7 +24,8 @@ export declare class HashKeyDID {
     private didContract;
     private resolverContract;
     private OnlyReadFlag;
-    readonly ContractAddr: string;
+    readonly didContractAddr: string;
+    readonly resolveContractAddr: string;
     /**
      * HashKeyDID constructor
      * @param {ChainInfo} chain
@@ -32,7 +33,8 @@ export declare class HashKeyDID {
      * @param {WalletProvider} [walletProvider] wallet Provider eg: {privateKey:""} or {mnemonic:""}
      */
     constructor(chain: ChainInfo, provider: ethers.providers.JsonRpcProvider, walletProvider?: WalletProvider);
-    ContractAddress(): string;
+    DIDContractAddress(): string;
+    ResolveContractAddress(): string;
     /**
      * WalletAddress get signer address when OnlyReadFlag is false
      *

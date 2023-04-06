@@ -81,14 +81,14 @@ var HashKeyDID = /** @class */ (function () {
         this.provider = provider;
         this.ContractAddr = chain.DIDContract;
         if (walletProvider === undefined) {
-            this.contract = new ethers_1.ethers.Contract(this.ContractAddr, didAbi_1.DIDAbi, this.provider);
+            this.contract = new ethers_1.ethers.Contract(this.didContractAddr, didAbi_1.DIDAbi, this.provider);
         }
         else {
             this.SetWalletProvider(walletProvider);
         }
     }
     HashKeyDID.prototype.ContractAddress = function () {
-        return this.ContractAddr;
+        return this.didContractAddr;
     };
     /**
      * WalletAddress get signer address when OnlyReadFlag is false
@@ -114,7 +114,7 @@ var HashKeyDID = /** @class */ (function () {
             throw "empty";
         }
         if (this.contract == undefined) {
-            this.contract = new ethers_1.ethers.Contract(this.ContractAddr, didAbi_1.DIDAbi, wallet);
+            this.contract = new ethers_1.ethers.Contract(this.didContractAddr, didAbi_1.DIDAbi, wallet);
         }
         else {
             this.contract = this.contract.connect(wallet);
