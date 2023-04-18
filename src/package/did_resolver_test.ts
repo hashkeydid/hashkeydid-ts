@@ -3,19 +3,13 @@ import {Error} from "../error/errors"
 import {HashKeyDID, NewHashKeyDID} from "./did";
 
 describe("DIDResolver test", async () => {
-    let address
-    let didName;
     let tokenId;
-    let authorizedAddr;
 
     let resolver: HashKeyDID;
 
     before(async () => {
-        resolver = await NewHashKeyDID("https://openapi2.platon.network/rpc",{privateKey:"f3db6526e98e79c7bd1dcadfa15a01e1de5c7293669608f90b9230581047cbc4"});
+        resolver = await NewHashKeyDID("https://openapi2.platon.network/rpc");
         tokenId = 13756;
-        didName = "herro.key";
-        authorizedAddr = "0xa060C1C3807059027Ca141EFb63f19E12e0cBF0c";
-        address = await resolver.WalletAddress();
     })
 
     it("Get DID name when reverse is false", async () => {
@@ -28,11 +22,11 @@ describe("DIDResolver test", async () => {
 
     it("Get DID name force when reverse is false, and set block height", async () => {
         let overrides = {"blockTag": 36513266};
-        let result = await resolver.GetDIDNameByAddrForce(address, overrides)
+        let result = await resolver.GetDIDNameByAddrForce("0xB45c5Eac26AF321dd9C02693418976F52E1219b6", overrides)
         expect(result).equal("herro.key");
 
         overrides = {"blockTag": 36513264};
-        result = await resolver.GetDIDNameByAddrForce(address, overrides);
+        result = await resolver.GetDIDNameByAddrForce("0xB45c5Eac26AF321dd9C02693418976F52E1219b6", overrides);
         expect(result).equal("this addr has not claimed a did");
     }).timeout(100000);
 
