@@ -40,20 +40,15 @@ var chai_1 = require("chai");
 var errors_1 = require("../error/errors");
 var did_1 = require("./did");
 describe("DIDResolver test", function () { return __awaiter(void 0, void 0, void 0, function () {
-    var address, didName, tokenId, authorizedAddr, resolver;
+    var tokenId, resolver;
     return __generator(this, function (_a) {
         before(function () { return __awaiter(void 0, void 0, void 0, function () {
             return __generator(this, function (_a) {
                 switch (_a.label) {
-                    case 0: return [4 /*yield*/, (0, did_1.NewHashKeyDID)("https://openapi2.platon.network/rpc", { privateKey: "f3db6526e98e79c7bd1dcadfa15a01e1de5c7293669608f90b9230581047cbc4" })];
+                    case 0: return [4 /*yield*/, (0, did_1.NewHashKeyDID)("https://openapi2.platon.network/rpc")];
                     case 1:
                         resolver = _a.sent();
                         tokenId = 13756;
-                        didName = "herro.key";
-                        authorizedAddr = "0xa060C1C3807059027Ca141EFb63f19E12e0cBF0c";
-                        return [4 /*yield*/, resolver.WalletAddress()];
-                    case 2:
-                        address = _a.sent();
                         return [2 /*return*/];
                 }
             });
@@ -82,12 +77,12 @@ describe("DIDResolver test", function () { return __awaiter(void 0, void 0, void
                 switch (_a.label) {
                     case 0:
                         overrides = { "blockTag": 36513266 };
-                        return [4 /*yield*/, resolver.GetDIDNameByAddrForce(address, overrides)];
+                        return [4 /*yield*/, resolver.GetDIDNameByAddrForce("0xB45c5Eac26AF321dd9C02693418976F52E1219b6", overrides)];
                     case 1:
                         result = _a.sent();
                         (0, chai_1.expect)(result).equal("herro.key");
                         overrides = { "blockTag": 36513264 };
-                        return [4 /*yield*/, resolver.GetDIDNameByAddrForce(address, overrides)];
+                        return [4 /*yield*/, resolver.GetDIDNameByAddrForce("0xB45c5Eac26AF321dd9C02693418976F52E1219b6", overrides)];
                     case 2:
                         result = _a.sent();
                         (0, chai_1.expect)(result).equal("this addr has not claimed a did");
