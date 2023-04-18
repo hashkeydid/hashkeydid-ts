@@ -7,4 +7,5 @@ export declare const Error: {
     ErrInvalidAvatarText: string;
     ErrInvalidTokenURI: string;
     ErrOnlyRead: string;
+    ErrNotSupport: string;
 };

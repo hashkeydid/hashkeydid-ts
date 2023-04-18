@@ -36,28 +36,59 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
     }
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.HashKeyDID = void 0;
+exports.HashKeyDID = exports.NewHashKeyDID = void 0;
 var ethers_1 = require("ethers");
-var setting = require("../../config/config");
 var didAbi_1 = require("../../contracts/did/didAbi");
 var errors_1 = require("../../error/errors");
+var config_1 = require("../../config/config");
+/**
+ * NewHashKeyDID constructor
+ * @param {string} rpc
+ * @param {WalletProvider} [walletProvider] wallet Provider eg: {privateKey:""} or {mnemonic:""}
+ *
+ * @return {Promise<HashKeyDID>} HashKeyDID
+ */
+function NewHashKeyDID(rpc, walletProvider) {
+    return __awaiter(this, void 0, void 0, function () {
+        var provider, network, chainId, chain;
+        return __generator(this, function (_a) {
+            switch (_a.label) {
+                case 0:
+                    provider = new ethers_1.ethers.providers.JsonRpcProvider(rpc);
+                    return [4 /*yield*/, provider.getNetwork()];
+                case 1:
+                    network = _a.sent();
+                    chainId = network.chainId.toString();
+                    if (!config_1.ChainList.has(chainId)) {
+                        throw errors_1.Error.ErrNotSupport;
+                    }
+                    chain = config_1.ChainList.get(chainId);
+                    return [2 /*return*/, new HashKeyDID(chain, provider, walletProvider)];
+            }
+        });
+    });
+}
+exports.NewHashKeyDID = NewHashKeyDID;
 var HashKeyDID = /** @class */ (function () {
     /**
      * HashKeyDID constructor
+     * @param {ChainInfo} chain
+     * @param {ethers.providers.JsonRpcProvider} provider ethers.providers.JsonRpcProvider
      * @param {WalletProvider} [walletProvider] wallet Provider eg: {privateKey:""} or {mnemonic:""}
      */
-    function HashKeyDID(walletProvider) {
+    function HashKeyDID(chain, provider, walletProvider) {
         this.OnlyReadFlag = true;
-        this.provider = new ethers_1.ethers.providers.JsonRpcProvider(setting.DefaultPlatONUrl);
+        this.provider = provider;
+        this.ContractAddr = chain.DIDContract;
         if (walletProvider === undefined) {
-            this.contract = new ethers_1.ethers.Contract(setting.DefaultDIDContractAddr, didAbi_1.DIDAbi, this.provider);
+            this.contract = new ethers_1.ethers.Contract(this.didContractAddr, didAbi_1.DIDAbi, this.provider);
         }
         else {
             this.SetWalletProvider(walletProvider);
         }
     }
     HashKeyDID.prototype.ContractAddress = function () {
-        return this.contract.address;
+        return this.didContractAddr;
     };
     /**
      * WalletAddress get signer address when OnlyReadFlag is false
@@ -83,33 +114,12 @@ var HashKeyDID = /** @class */ (function () {
             throw "empty";
         }
         if (this.contract == undefined) {
-            this.contract = new ethers_1.ethers.Contract(setting.DefaultDIDContractAddr, didAbi_1.DIDAbi, wallet);
+            this.contract = new ethers_1.ethers.Contract(this.didContractAddr, didAbi_1.DIDAbi, wallet);
         }
         else {
             this.contract = this.contract.connect(wallet);
         }
         this.OnlyReadFlag = false;
-    };
-    /**
-     * Mint mints did with address
-     *
-     * @param {string} address eg: 20-hex address
-     * @param {string} didName eg: xxxxx.key
-     * @param {Overrides} [overrides] eg: { gasPrice:1000000000 }
-     * @return {Promise<TransactionResponse>} TransactionResponse details
-     * @throws Will throw ErrOnlyRead error if the OnlyReadFlag = true
-     * @throws Will throw a transaction error when SendTransaction fail
-     */
-    HashKeyDID.prototype.Mint = function (address, didName, overrides) {
-        if (overrides === void 0) { overrides = {}; }
-        return __awaiter(this, void 0, void 0, function () {
-            return __generator(this, function (_a) {
-                if (this.OnlyReadFlag) {
-                    throw errors_1.Error.ErrOnlyRead;
-                }
-                return [2 /*return*/, this.contract.mint(address, didName, overrides)];
-            });
-        });
     };
     /**
      * AddAuth adds address to tokenId authorized address list
@@ -150,231 +160,6 @@ var HashKeyDID = /** @class */ (function () {
                     throw errors_1.Error.ErrOnlyRead;
                 }
                 return [2 /*return*/, this.contract.removeAuth(tokenId, address, overrides)];
-            });
-        });
-    };
-    /**
-     * AddKYC adds KYC information for did
-     *
-     * @param {number | bigint | BigNumber | string} tokenId eg: 12
-     * @param {string} KYCProvider eg: 20-hex address
-     * @param {number | string} KYCId eg: 1
-     * @param {boolean} status eg: true/false
-     * @param {number | string} updateTime eg: 16342343423
-     * @param {number | string} expireTime eg: 16342343423
-     * @param {string} evidence eg: 32-hex string
-     * @param {Overrides} [overrides] eg: { gasPrice:1000000000 }
-     * @return {promise<TransactionResponse>} TransactionResponse details
-     * @throws Will throw ErrOnlyRead error if the OnlyReadFlag = true
-     * @throws Will throw a transaction error when SendTransaction fail
-     */
-    HashKeyDID.prototype.AddKYC = function (tokenId, KYCProvider, KYCId, status, updateTime, expireTime, evidence, overrides) {
-        if (overrides === void 0) { overrides = {}; }
-        return __awaiter(this, void 0, void 0, function () {
-            return __generator(this, function (_a) {
-                if (this.OnlyReadFlag) {
-                    throw errors_1.Error.ErrOnlyRead;
-                }
-                return [2 /*return*/, this.contract.addKYC(tokenId, KYCProvider, KYCId, status, updateTime, expireTime, evidence, overrides)];
-            });
-        });
-    };
-    /**
-     * SetTokenSupply sets DeedGrain(erc1155) supply number of each tokenId
-     *
-     * @param {string} DGAddr eg: 20-hex address
-     * @param {number | bigint | BigNumber | string} tokenId eg: 1
-     * @param {number | string} supply eg: 16342343423
-     * @param {Overrides} [overrides] eg: { gasPrice:1000000000 }
-     * @return {promise<TransactionResponse>} TransactionResponse details
-     * @throws Will throw ErrOnlyRead error if the OnlyReadFlag = true
-     * @throws Will throw a transaction error when SendTransaction fail
-     */
-    HashKeyDID.prototype.SetTokenSupply = function (DGAddr, tokenId, supply, overrides) {
-        if (overrides === void 0) { overrides = {}; }
-        return __awaiter(this, void 0, void 0, function () {
-            return __generator(this, function (_a) {
-                if (this.OnlyReadFlag) {
-                    throw errors_1.Error.ErrOnlyRead;
-                }
-                return [2 /*return*/, this.contract.setTokenSupply(DGAddr, tokenId, supply, overrides)];
-            });
-        });
-    };
-    /**
-     * MintDG1 mints DeedGrain contract(erc1155) NFT for addresses
-     *
-     * @param {string} DGAddr eg: 20-hex address
-     * @param {number} tokenId eg: 1
-     * @param {string[]} addrs eg: [20-hex address...]
-     * @param {Overrides} [overrides] eg: { gasPrice:1000000000 }
-     * @return {promise<TransactionResponse>} TransactionResponse details
-     * @throws Will throw ErrOnlyRead error if the OnlyReadFlag = true
-     * @throws Will throw a transaction error when SendTransaction fail
-     */
-    HashKeyDID.prototype.MintDGV1 = function (DGAddr, tokenId, addrs, overrides) {
-        if (overrides === void 0) { overrides = {}; }
-        return __awaiter(this, void 0, void 0, function () {
-            return __generator(this, function (_a) {
-                if (this.OnlyReadFlag) {
-                    throw errors_1.Error.ErrOnlyRead;
-                }
-                return [2 /*return*/, this.contract.mintDGV1(DGAddr, tokenId, addrs, overrides)];
-            });
-        });
-    };
-    /**
-     * MintDG2 mints DeedGrain contract(erc1155) NFT for addresses
-     *
-     * @param {string} DGAddr eg: 20-hex address
-     * @param {number} tokenId eg: 1
-     * @param {string[]} addrs eg: [20-hex address...]
-     * @param {string} data eg: ""
-     * @param {Overrides} [overrides] eg: { gasPrice:1000000000 }
-     * @return {promise<TransactionResponse>} TransactionResponse details
-     * @throws Will throw ErrOnlyRead error if the OnlyReadFlag = true
-     * @throws Will throw a transaction error when SendTransaction fail
-     */
-    HashKeyDID.prototype.MintDGV2 = function (DGAddr, tokenId, addrs, data, overrides) {
-        if (overrides === void 0) { overrides = {}; }
-        return __awaiter(this, void 0, void 0, function () {
-            return __generator(this, function (_a) {
-                if (this.OnlyReadFlag) {
-                    throw errors_1.Error.ErrOnlyRead;
-                }
-                return [2 /*return*/, this.contract.mintDGV2(DGAddr, tokenId, addrs, data, overrides)];
-            });
-        });
-    };
-    /**
-     * ClaimDG mints DeedGrain contract(erc1155) NFT
-     *
-     * @param {string} DGAddr eg: 20-hex address
-     * @param {number | bigint | BigNumber | string} tokenId eg: 1
-     * @param {string} evidence eg: 32-hex string
-     * @param {Overrides} [overrides] eg: { gasPrice:1000000000 }
-     * @return {promise<TransactionResponse>} TransactionResponse details
-     * @throws Will throw ErrOnlyRead error if the OnlyReadFlag = true
-     * @throws Will throw transaction error when SendTransaction fail
-     */
-    HashKeyDID.prototype.ClaimDG = function (DGAddr, tokenId, evidence, overrides) {
-        if (overrides === void 0) { overrides = {}; }
-        return __awaiter(this, void 0, void 0, function () {
-            return __generator(this, function (_a) {
-                if (this.OnlyReadFlag) {
-                    throw errors_1.Error.ErrOnlyRead;
-                }
-                return [2 /*return*/, this.contract.claimDG(DGAddr, tokenId, evidence)];
-            });
-        });
-    };
-    /**
-     * IssueDG issues DeedGrain contract(erc1155)
-     *
-     * @param {string} _name
-     * @param {string} _symbol
-     * @param {string} _baseUri
-     * @param {string} _evidence eg: 32-hex string
-     * @param {boolean} _transferable eg: true/false
-     * @param {Overrides} [overrides] eg: { gasPrice:1000000000 }
-     * @return {promise<TransactionResponse>} TransactionResponse details
-     * @throws Will throw ErrOnlyRead error if the OnlyReadFlag = true
-     * @throws Will throw transaction error when SendTransaction fail
-     */
-    HashKeyDID.prototype.IssueDG = function (_name, _symbol, _baseUri, _evidence, _transferable, overrides) {
-        if (overrides === void 0) { overrides = {}; }
-        return __awaiter(this, void 0, void 0, function () {
-            return __generator(this, function (_a) {
-                if (this.OnlyReadFlag) {
-                    throw errors_1.Error.ErrOnlyRead;
-                }
-                return [2 /*return*/, this.contract.issueDG(_name, _symbol, _baseUri, _evidence, _transferable, overrides)];
-            });
-        });
-    };
-    /**
-     * SetNFTSupply Only issuer can set NFT supply
-     *
-     * @param {string} NFTAddr
-     * @param {number | string} supply
-     * @param {Overrides} [overrides] eg: { gasPrice:1000000000 }
-     * @return {promise<TransactionResponse>} TransactionResponse details
-     * @throws Will throw ErrOnlyRead error if the OnlyReadFlag = true
-     * @throws Will throw transaction error when SendTransaction fail
-     */
-    HashKeyDID.prototype.SetNFTSupply = function (NFTAddr, supply, overrides) {
-        if (overrides === void 0) { overrides = {}; }
-        return __awaiter(this, void 0, void 0, function () {
-            return __generator(this, function (_a) {
-                if (this.OnlyReadFlag) {
-                    throw errors_1.Error.ErrOnlyRead;
-                }
-                return [2 /*return*/, this.contract.setNFTSupply(NFTAddr, supply)];
-            });
-        });
-    };
-    /**
-     * SetNFTBaseUri Only issuer can set NFT's baseuri
-     *
-     * @param {string} NFTAddr DG NFT contract address
-     * @param {string} baseUri All of the NFT's baseuri
-     * @param {Overrides} [overrides] eg: { gasPrice:1000000000 }
-     * @return {promise<TransactionResponse>} TransactionResponse details
-     * @throws Will throw ErrOnlyRead error if the OnlyReadFlag = true
-     * @throws Will throw transaction error when SendTransaction fail
-     */
-    HashKeyDID.prototype.SetNFTBaseUri = function (NFTAddr, baseUri, overrides) {
-        if (overrides === void 0) { overrides = {}; }
-        return __awaiter(this, void 0, void 0, function () {
-            return __generator(this, function (_a) {
-                if (this.OnlyReadFlag) {
-                    throw errors_1.Error.ErrOnlyRead;
-                }
-                return [2 /*return*/, this.contract.setNFTBaseUri(NFTAddr, baseUri)];
-            });
-        });
-    };
-    /**
-     * MintDGNFT Only issuer can airdrop the nft
-     *
-     * @param {string} NFTAddr DG NFT contract address
-     * @param {number | string} sid SeriesId
-     * @param {string[]} addrs All the users address to airdrop
-     * @param {Overrides} [overrides] eg: { gasPrice:1000000000 }
-     * @return {promise<TransactionResponse>} TransactionResponse details
-     * @throws Will throw ErrOnlyRead error if the OnlyReadFlag = true
-     * @throws Will throw transaction error when SendTransaction fail
-     */
-    HashKeyDID.prototype.MintDGNFT = function (NFTAddr, sid, addrs, overrides) {
-        if (overrides === void 0) { overrides = {}; }
-        return __awaiter(this, void 0, void 0, function () {
-            return __generator(this, function (_a) {
-                if (this.OnlyReadFlag) {
-                    throw errors_1.Error.ErrOnlyRead;
-                }
-                return [2 /*return*/, this.contract.mintDGNFT(NFTAddr, sid, addrs)];
-            });
-        });
-    };
-    /**
-     * ClaimDGNFT User claim the nft
-     *
-     * @param {string} NFTAddr DG NFT address
-     * @param {number | string} sid SeriesId
-     * @param {string} evidence Signature
-     * @param {Overrides} [overrides] eg: { gasPrice:1000000000 }
-     * @return {promise<TransactionResponse>} TransactionResponse details
-     * @throws Will throw ErrOnlyRead error if the OnlyReadFlag = true
-     * @throws Will throw transaction error when SendTransaction fail
-     */
-    HashKeyDID.prototype.ClaimDGNFT = function (NFTAddr, sid, evidence, overrides) {
-        if (overrides === void 0) { overrides = {}; }
-        return __awaiter(this, void 0, void 0, function () {
-            return __generator(this, function (_a) {
-                if (this.OnlyReadFlag) {
-                    throw errors_1.Error.ErrOnlyRead;
-                }
-                return [2 /*return*/, this.contract.claimDGNFT(NFTAddr, sid, evidence, overrides)];
             });
         });
     };
@@ -551,20 +336,6 @@ var HashKeyDID = /** @class */ (function () {
         return __awaiter(this, void 0, void 0, function () {
             return __generator(this, function (_a) {
                 return [2 /*return*/, this.contract.tokenOfOwnerByIndex(address, index, overrides)];
-            });
-        });
-    };
-    /**
-     * TotalSupply See {IERC721Enumerable-totalSupply}.
-     *
-     * @param {CallOverrides} [overrides] Note block number, eg: {"blockTag": 36513266}
-     * @return {promise<string>} totalSupply number
-     */
-    HashKeyDID.prototype.TotalSupply = function (overrides) {
-        if (overrides === void 0) { overrides = {}; }
-        return __awaiter(this, void 0, void 0, function () {
-            return __generator(this, function (_a) {
-                return [2 /*return*/, this.contract.totalSupply(overrides)];
             });
         });
     };

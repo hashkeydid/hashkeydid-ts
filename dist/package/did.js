@@ -36,16 +36,15 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
     }
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.Resolver = exports.NewHashKeyDIDResolver = exports.DIDMateData = exports.DIDImage = void 0;
+exports.HashKeyDID = exports.NewHashKeyDID = exports.DIDMateData = exports.DIDImage = void 0;
 var ethers_1 = require("ethers");
-var setting = require("../../config/config");
-var errors_1 = require("../../error/errors");
-var resolverAbi_1 = require("../../contracts/resolver/resolverAbi");
-var config_1 = require("../../config/config");
-var didAbi_1 = require("../../contracts/did/didAbi");
-var erc721Contract_1 = require("../../contracts/erc721/erc721Contract");
-var erc1155Contract_1 = require("../../contracts/erc1155/erc1155Contract");
+var didAbi_1 = require("../contracts/did/didAbi");
+var errors_1 = require("../error/errors");
+var config_1 = require("../config/config");
+var resolverAbi_1 = require("../contracts/resolver/resolverAbi");
 var axios_1 = require("axios");
+var erc721Contract_1 = require("../contracts/erc721/erc721Contract");
+var erc1155Contract_1 = require("../contracts/erc1155/erc1155Contract");
 var DIDImage = /** @class */ (function () {
     function DIDImage() {
     }
@@ -58,7 +57,14 @@ var DIDMateData = /** @class */ (function () {
     return DIDMateData;
 }());
 exports.DIDMateData = DIDMateData;
-function NewHashKeyDIDResolver(rpc, walletProvider) {
+/**
+ * NewHashKeyDID constructor
+ * @param {string} rpc
+ * @param {WalletProvider} [walletProvider] wallet Provider eg: {privateKey:""} or {mnemonic:""}
+ *
+ * @return {Promise<HashKeyDID>} HashKeyDID
+ */
+function NewHashKeyDID(rpc, walletProvider) {
     return __awaiter(this, void 0, void 0, function () {
         var provider, network, chainId, chain;
         return __generator(this, function (_a) {
@@ -73,42 +79,51 @@ function NewHashKeyDIDResolver(rpc, walletProvider) {
                         throw errors_1.Error.ErrNotSupport;
                     }
                     chain = config_1.ChainList.get(chainId);
-                    return [2 /*return*/, new Resolver(chain, provider, walletProvider)];
+                    return [2 /*return*/, new HashKeyDID(chain, provider, walletProvider)];
             }
         });
     });
 }
-exports.NewHashKeyDIDResolver = NewHashKeyDIDResolver;
-var Resolver = /** @class */ (function () {
+exports.NewHashKeyDID = NewHashKeyDID;
+var HashKeyDID = /** @class */ (function () {
     /**
-     * HashKeyDIDResolver constructor
+     * HashKeyDID constructor
      * @param {ChainInfo} chain
      * @param {ethers.providers.JsonRpcProvider} provider ethers.providers.JsonRpcProvider
      * @param {WalletProvider} [walletProvider] wallet Provider eg: {privateKey:""} or {mnemonic:""}
      */
-    function Resolver(chain, provider, walletProvider) {
+    function HashKeyDID(chain, provider, walletProvider) {
         this.OnlyReadFlag = true;
         this.provider = provider;
-        this.didContract = new ethers_1.ethers.Contract(chain.DIDContract, didAbi_1.DIDAbi, this.provider);
-        this.ContractAddr = chain.ResolveContract;
+        this.didContractAddr = chain.DIDContract;
+        this.resolveContractAddr = chain.ResolveContract;
         if (walletProvider === undefined) {
-            this.contract = new ethers_1.ethers.Contract(this.ContractAddr, resolverAbi_1.ResolverAbi, this.provider);
+            this.didContract = new ethers_1.ethers.Contract(this.didContractAddr, didAbi_1.DIDAbi, this.provider);
+            this.resolverContract = new ethers_1.ethers.Contract(this.resolveContractAddr, resolverAbi_1.ResolverAbi, this.provider);
         }
         else {
             this.SetWalletProvider(walletProvider);
         }
     }
-    Resolver.prototype.ContractAddress = function () {
-        return this.ContractAddr;
+    HashKeyDID.prototype.DIDContractAddress = function () {
+        return this.didContractAddr;
     };
-    Resolver.prototype.WalletAddress = function () {
+    HashKeyDID.prototype.ResolveContractAddress = function () {
+        return this.resolveContractAddr;
+    };
+    /**
+     * WalletAddress get signer address when OnlyReadFlag is false
+     *
+     * @return {Promise<string>} signer address or ErrOnlyRead
+     */
+    HashKeyDID.prototype.WalletAddress = function () {
         return __awaiter(this, void 0, void 0, function () {
             return __generator(this, function (_a) {
-                return [2 /*return*/, this.OnlyReadFlag ? errors_1.Error.ErrOnlyRead : this.contract.signer.getAddress()];
+                return [2 /*return*/, this.OnlyReadFlag ? errors_1.Error.ErrOnlyRead : this.didContract.signer.getAddress()];
             });
         });
     };
-    Resolver.prototype.SetWalletProvider = function (walletProvider) {
+    HashKeyDID.prototype.SetWalletProvider = function (walletProvider) {
         var wallet;
         if (walletProvider.privateKey != undefined) {
             wallet = new ethers_1.ethers.Wallet(walletProvider.privateKey, this.provider);
@@ -119,14 +134,237 @@ var Resolver = /** @class */ (function () {
         else {
             throw "empty";
         }
-        if (this.contract == undefined) {
-            this.contract = new ethers_1.ethers.Contract(this.ContractAddr, resolverAbi_1.ResolverAbi, wallet);
+        if (this.didContract == undefined) {
+            this.didContract = new ethers_1.ethers.Contract(this.didContractAddr, didAbi_1.DIDAbi, wallet);
+            this.resolverContract = new ethers_1.ethers.Contract(this.resolveContractAddr, resolverAbi_1.ResolverAbi, wallet);
         }
         else {
-            this.contract = this.contract.connect(wallet);
+            this.didContract = this.didContract.connect(wallet);
+            this.resolverContract = this.resolverContract.connect(wallet);
         }
         this.OnlyReadFlag = false;
     };
+    /**
+     * AddAuth adds address to tokenId authorized address list
+     *
+     * @param {number | bigint | BigNumber | string} tokenId eg: 12
+     * @param {string} address eg: 20-hex address
+     * @param {Overrides} [overrides] eg: { gasPrice:1000000000 }
+     * @return {promise<TransactionResponse>} TransactionResponse details
+     * @throws Will throw ErrOnlyRead error if the OnlyReadFlag = true
+     * @throws Will throw a transaction error when SendTransaction fail
+     */
+    HashKeyDID.prototype.AddAuth = function (tokenId, address, overrides) {
+        if (overrides === void 0) { overrides = {}; }
+        return __awaiter(this, void 0, void 0, function () {
+            return __generator(this, function (_a) {
+                if (this.OnlyReadFlag) {
+                    throw errors_1.Error.ErrOnlyRead;
+                }
+                return [2 /*return*/, this.didContract.addAuth(tokenId, address, overrides)];
+            });
+        });
+    };
+    /**
+     * RemoveAuth removes address from tokenId authorized address list
+     *
+     * @param {number | bigint | BigNumber | string} tokenId eg: 12
+     * @param {string} address eg: 20-hex address
+     * @param {Overrides} [overrides] eg: { gasPrice:1000000000 }
+     * @return {promise<TransactionResponse>} TransactionResponse details
+     * @throws Will throw ErrOnlyRead error if the OnlyReadFlag = true
+     * @throws Will throw a transaction error when SendTransaction fail
+     */
+    HashKeyDID.prototype.RemoveAuth = function (tokenId, address, overrides) {
+        if (overrides === void 0) { overrides = {}; }
+        return __awaiter(this, void 0, void 0, function () {
+            return __generator(this, function (_a) {
+                if (this.OnlyReadFlag) {
+                    throw errors_1.Error.ErrOnlyRead;
+                }
+                return [2 /*return*/, this.didContract.removeAuth(tokenId, address, overrides)];
+            });
+        });
+    };
+    /**
+     * Did2TokenId returns tokenId by DID
+     *
+     * @param {string} didName eg: hee.key
+     * @param {CallOverrides} [overrides] Note block number, eg: {"blockTag": 36513266}
+     * @return {promise<string>} tokenId
+     */
+    HashKeyDID.prototype.Did2TokenId = function (didName, overrides) {
+        if (overrides === void 0) { overrides = {}; }
+        return __awaiter(this, void 0, void 0, function () {
+            return __generator(this, function (_a) {
+                return [2 /*return*/, this.didContract.did2TokenId(didName, overrides)];
+            });
+        });
+    };
+    /**
+     * GetAddrByDIDName returns DID address
+     *
+     * @param {string} didName
+     * @param {CallOverrides} [overrides] Note block number, eg: {"blockTag": 36513266}
+     * @return {promise<string>} address
+     */
+    HashKeyDID.prototype.GetAddrByDIDName = function (didName, overrides) {
+        if (overrides === void 0) { overrides = {}; }
+        return __awaiter(this, void 0, void 0, function () {
+            var tokenId;
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0: return [4 /*yield*/, this.Did2TokenId(didName)];
+                    case 1:
+                        tokenId = _a.sent();
+                        return [2 /*return*/, this.didContract.ownerOf(tokenId, overrides)];
+                }
+            });
+        });
+    };
+    /**
+     * VerifyDIDFormat returns checking result about DID format
+     *
+     * @param {string} didName
+     * @return {promise<boolean>} true/false
+     */
+    HashKeyDID.prototype.VerifyDIDFormat = function (didName) {
+        return __awaiter(this, void 0, void 0, function () {
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0: return [4 /*yield*/, this.didContract.verifyDIDFormat(didName)];
+                    case 1: return [2 /*return*/, _a.sent()];
+                }
+            });
+        });
+    };
+    /**
+     * GetAuthorizedAddrs returns DID authorized addresses
+     *
+     * @param {number | bigint | BigNumber | string} tokenId eg: 12
+     * @param {CallOverrides} [overrides] Note block number, eg: {"blockTag": 36513266}
+     * @return {promise<string[]>} return addresses
+     */
+    HashKeyDID.prototype.GetAuthorizedAddrs = function (tokenId, overrides) {
+        if (overrides === void 0) { overrides = {}; }
+        return __awaiter(this, void 0, void 0, function () {
+            return __generator(this, function (_a) {
+                return [2 /*return*/, this.didContract.getAuthorizedAddrs(tokenId, overrides)];
+            });
+        });
+    };
+    /**
+     * IsAddrAuthorized returns checking result about DID authorized addresses
+     *
+     * @param {number | bigint | BigNumber | string} tokenId eg: 12
+     * @param {string} address eg: 20-hex address
+     * @param {CallOverrides} [overrides] Note block number, eg: {"blockTag": 36513266}
+     * @return {promise<boolean>} return true/false
+     */
+    HashKeyDID.prototype.IsAddrAuthorized = function (tokenId, address, overrides) {
+        if (overrides === void 0) { overrides = {}; }
+        return __awaiter(this, void 0, void 0, function () {
+            return __generator(this, function (_a) {
+                return [2 /*return*/, this.didContract.isAddrAuthorized(tokenId, address, overrides)];
+            });
+        });
+    };
+    /**
+     * GetKYCInfo returns DID KYC information
+     *
+     * @param {number | bigint | BigNumber | string} tokenId eg: 12
+     * @param {string} KYCProvider eg: 20-hex address
+     * @param {number | string} KYCId eg: 1
+     * @param {CallOverrides} [overrides] Note block number, eg: {"blockTag": 36513266}
+     * @return {promise<Object>} transaction details
+     */
+    HashKeyDID.prototype.GetKYCInfo = function (tokenId, KYCProvider, KYCId, overrides) {
+        if (overrides === void 0) { overrides = {}; }
+        return __awaiter(this, void 0, void 0, function () {
+            return __generator(this, function (_a) {
+                return [2 /*return*/, this.didContract.getKYCInfo(tokenId, KYCProvider, KYCId, overrides)];
+            });
+        });
+    };
+    /**
+     * DidClaimed returns checking result about DID registered information
+     *
+     * @param {string} didName eg: kee.key
+     * @param {CallOverrides} [overrides] Note block number, eg: {"blockTag": 36513266}
+     * @return {promise<boolean>} true/false
+     */
+    HashKeyDID.prototype.DidClaimed = function (didName, overrides) {
+        if (overrides === void 0) { overrides = {}; }
+        return __awaiter(this, void 0, void 0, function () {
+            return __generator(this, function (_a) {
+                return [2 /*return*/, this.didContract.didClaimed(didName, overrides)];
+            });
+        });
+    };
+    /**
+     * AddrClaimed returns checking result about address registered information
+     *
+     * @param {string} address eg: 20-hex address
+     * @param {CallOverrides} [overrides] Note block number, eg: {"blockTag": 36513266}
+     * @return {promise<boolean>} true/false
+     */
+    HashKeyDID.prototype.AddrClaimed = function (address, overrides) {
+        if (overrides === void 0) { overrides = {}; }
+        return __awaiter(this, void 0, void 0, function () {
+            return __generator(this, function (_a) {
+                return [2 /*return*/, this.didContract.addrClaimed(address, overrides)];
+            });
+        });
+    };
+    /**
+     * TokenId2Did returns DID by tokenId
+     *
+     * @param {number | bigint | BigNumber | string} tokenId eg: 12
+     * @param {CallOverrides} [overrides] Note block number, eg: {"blockTag": 36513266}
+     * @return {promise<string>} did name
+     */
+    HashKeyDID.prototype.TokenId2Did = function (tokenId, overrides) {
+        if (overrides === void 0) { overrides = {}; }
+        return __awaiter(this, void 0, void 0, function () {
+            return __generator(this, function (_a) {
+                return [2 /*return*/, this.didContract.tokenId2Did(tokenId, overrides)];
+            });
+        });
+    };
+    /**
+     * DeedGrainAddrToIssuer returns issuer address by address
+     *
+     * @param {string} address eg: 20-hex address
+     * @param {CallOverrides} [overrides] Note block number, eg: {"blockTag": 36513266}
+     * @return {promise<string>} address
+     */
+    HashKeyDID.prototype.DeedGrainAddrToIssuer = function (address, overrides) {
+        if (overrides === void 0) { overrides = {}; }
+        return __awaiter(this, void 0, void 0, function () {
+            return __generator(this, function (_a) {
+                return [2 /*return*/, this.didContract.deedGrainAddrToIssuer(address, overrides)];
+            });
+        });
+    };
+    /**
+     * TokenOfOwnerByIndex See {IERC721Enumerable-tokenOfOwnerByIndex}.
+     *
+     * @param {string} address eg: 20-hex address
+     * @param {number | string} index eg: 1
+     * @param {CallOverrides} [overrides] Note block number, eg: {"blockTag": 36513266}
+     * @return {promise<string>} tokenId
+     */
+    HashKeyDID.prototype.TokenOfOwnerByIndex = function (address, index, overrides) {
+        if (overrides === void 0) { overrides = {}; }
+        return __awaiter(this, void 0, void 0, function () {
+            return __generator(this, function (_a) {
+                return [2 /*return*/, this.didContract.tokenOfOwnerByIndex(address, index, overrides)];
+            });
+        });
+    };
+    /*************************************************/
+    /********************resolver*********************/
+    /*************************************************/
     /**
      * SetBlockChainAddress sets blockchain addresses
      *
@@ -138,14 +376,14 @@ var Resolver = /** @class */ (function () {
      * @throws Will throw ErrOnlyRead error if the OnlyReadFlag = true
      * @throws Will throw a transaction error when SendTransaction fail
      */
-    Resolver.prototype.SetBlockChainAddress = function (tokenId, coinType, address, overrides) {
+    HashKeyDID.prototype.SetBlockChainAddress = function (tokenId, coinType, address, overrides) {
         if (overrides === void 0) { overrides = {}; }
         return __awaiter(this, void 0, void 0, function () {
             return __generator(this, function (_a) {
                 if (this.OnlyReadFlag) {
                     throw errors_1.Error.ErrOnlyRead;
                 }
-                return [2 /*return*/, this.contract.setAddr(tokenId, coinType, address, overrides)];
+                return [2 /*return*/, this.resolverContract.setAddr(tokenId, coinType, address, overrides)];
             });
         });
     };
@@ -159,14 +397,14 @@ var Resolver = /** @class */ (function () {
      * @throws Will throw ErrOnlyRead error if the OnlyReadFlag = true
      * @throws Will throw a transaction error when SendTransaction fail
      */
-    Resolver.prototype.SetContentHash = function (tokenId, url, overrides) {
+    HashKeyDID.prototype.SetContentHash = function (tokenId, url, overrides) {
         if (overrides === void 0) { overrides = {}; }
         return __awaiter(this, void 0, void 0, function () {
             return __generator(this, function (_a) {
                 if (this.OnlyReadFlag) {
                     throw errors_1.Error.ErrOnlyRead;
                 }
-                return [2 /*return*/, this.contract.setContentHash(tokenId, url, overrides)];
+                return [2 /*return*/, this.resolverContract.setContentHash(tokenId, url, overrides)];
             });
         });
     };
@@ -181,14 +419,14 @@ var Resolver = /** @class */ (function () {
      * @throws Will throw ErrOnlyRead error if the OnlyReadFlag = true
      * @throws Will throw a transaction error when SendTransaction fail
      */
-    Resolver.prototype.SetPubkey = function (tokenId, x, y, overrides) {
+    HashKeyDID.prototype.SetPubkey = function (tokenId, x, y, overrides) {
         if (overrides === void 0) { overrides = {}; }
         return __awaiter(this, void 0, void 0, function () {
             return __generator(this, function (_a) {
                 if (this.OnlyReadFlag) {
                     throw errors_1.Error.ErrOnlyRead;
                 }
-                return [2 /*return*/, this.contract.setPubkey(tokenId, x, y, overrides)];
+                return [2 /*return*/, this.resolverContract.setPubkey(tokenId, x, y, overrides)];
             });
         });
     };
@@ -203,14 +441,14 @@ var Resolver = /** @class */ (function () {
      * @throws Will throw ErrOnlyRead error if the OnlyReadFlag = true
      * @throws Will throw a transaction error when SendTransaction fail
      */
-    Resolver.prototype.SetText = function (tokenId, key, value, overrides) {
+    HashKeyDID.prototype.SetText = function (tokenId, key, value, overrides) {
         if (overrides === void 0) { overrides = {}; }
         return __awaiter(this, void 0, void 0, function () {
             return __generator(this, function (_a) {
                 if (this.OnlyReadFlag) {
                     throw errors_1.Error.ErrOnlyRead;
                 }
-                return [2 /*return*/, this.contract.setText(tokenId, key, value, overrides)];
+                return [2 /*return*/, this.resolverContract.setText(tokenId, key, value, overrides)];
             });
         });
     };
@@ -221,11 +459,11 @@ var Resolver = /** @class */ (function () {
      * @param {CallOverrides} [overrides] Note block number, eg: {"blockTag": 36513266}
      * @return {promise<string>} return did name
      */
-    Resolver.prototype.GetDIDNameByAddr = function (address, overrides) {
+    HashKeyDID.prototype.GetDIDNameByAddr = function (address, overrides) {
         if (overrides === void 0) { overrides = {}; }
         return __awaiter(this, void 0, void 0, function () {
             return __generator(this, function (_a) {
-                return [2 /*return*/, this.contract.name(address, overrides)];
+                return [2 /*return*/, this.resolverContract.name(address, overrides)];
             });
         });
     };
@@ -236,7 +474,7 @@ var Resolver = /** @class */ (function () {
      * @param {CallOverrides} [overrides] Note block number, eg: {"blockTag": 36513266}
      * @return {Promise<string>} return did name
      */
-    Resolver.prototype.GetDIDNameByAddrForce = function (address, overrides) {
+    HashKeyDID.prototype.GetDIDNameByAddrForce = function (address, overrides) {
         if (overrides === void 0) { overrides = {}; }
         return __awaiter(this, void 0, void 0, function () {
             var isClaimed, tokenId;
@@ -264,11 +502,11 @@ var Resolver = /** @class */ (function () {
      * @param {CallOverrides} [overrides] Note block number, eg: {"blockTag": 36513266}
      * @return {Promise<string>} return blockchain address
      */
-    Resolver.prototype.GetBlockChainAddress = function (tokenId, coinType, overrides) {
+    HashKeyDID.prototype.GetBlockChainAddress = function (tokenId, coinType, overrides) {
         if (overrides === void 0) { overrides = {}; }
         return __awaiter(this, void 0, void 0, function () {
             return __generator(this, function (_a) {
-                return [2 /*return*/, this.contract.addr(tokenId, coinType, overrides)];
+                return [2 /*return*/, this.resolverContract.addr(tokenId, coinType, overrides)];
             });
         });
     };
@@ -279,11 +517,11 @@ var Resolver = /** @class */ (function () {
      * @param {CallOverrides} [overrides] Note block number, eg: {"blockTag": 36513266}
      * @return {promise<string>} content url link
      */
-    Resolver.prototype.GetContentHash = function (tokenId, overrides) {
+    HashKeyDID.prototype.GetContentHash = function (tokenId, overrides) {
         if (overrides === void 0) { overrides = {}; }
         return __awaiter(this, void 0, void 0, function () {
             return __generator(this, function (_a) {
-                return [2 /*return*/, this.contract.contentHash(tokenId, overrides)];
+                return [2 /*return*/, this.resolverContract.contentHash(tokenId, overrides)];
             });
         });
     };
@@ -294,11 +532,11 @@ var Resolver = /** @class */ (function () {
      * @param {CallOverrides} [overrides] Note block number, eg: {"blockTag": 36513266}
      * @return {promise<string>} public key
      */
-    Resolver.prototype.GetPublicKey = function (tokenId, overrides) {
+    HashKeyDID.prototype.GetPublicKey = function (tokenId, overrides) {
         if (overrides === void 0) { overrides = {}; }
         return __awaiter(this, void 0, void 0, function () {
             return __generator(this, function (_a) {
-                return [2 /*return*/, this.contract.pubkey(tokenId, overrides)];
+                return [2 /*return*/, this.resolverContract.pubkey(tokenId, overrides)];
             });
         });
     };
@@ -310,11 +548,11 @@ var Resolver = /** @class */ (function () {
      * @param {CallOverrides} [overrides] Note block number, eg: {"blockTag": 36513266}
      * @return {promise<string>} string
      */
-    Resolver.prototype.Text = function (tokenId, key, overrides) {
+    HashKeyDID.prototype.Text = function (tokenId, key, overrides) {
         if (overrides === void 0) { overrides = {}; }
         return __awaiter(this, void 0, void 0, function () {
             return __generator(this, function (_a) {
-                return [2 /*return*/, this.contract.text(tokenId, key, overrides)];
+                return [2 /*return*/, this.resolverContract.text(tokenId, key, overrides)];
             });
         });
     };
@@ -325,7 +563,7 @@ var Resolver = /** @class */ (function () {
      * @param {CallOverrides} [overrides] Note block number, eg: {blockTag: 36513266}
      * @return {promise<string>} return avatar url or Error
      */
-    Resolver.prototype.GetMetadataImageByDIDName = function (didName, overrides) {
+    HashKeyDID.prototype.GetMetadataImageByDIDName = function (didName, overrides) {
         if (overrides === void 0) { overrides = {}; }
         return __awaiter(this, void 0, void 0, function () {
             var res, tokenId;
@@ -351,7 +589,7 @@ var Resolver = /** @class */ (function () {
      * @param {number | BigNumber | string} tokenId eg: 1
      * @return {promise<string>} return metadata avatar url
      */
-    Resolver.prototype.GetMetadataImageByTokenId = function (tokenId) {
+    HashKeyDID.prototype.GetMetadataImageByTokenId = function (tokenId) {
         return __awaiter(this, void 0, void 0, function () {
             return __generator(this, function (_a) {
                 return [2 /*return*/, this.GetMetadataImage(tokenId)];
@@ -366,7 +604,7 @@ var Resolver = /** @class */ (function () {
      * @param {CallOverrides} [overrides] Note block number, eg: {"blockTag": 36513266}
      * @return {promise<string>} return metadata avatar url
      */
-    Resolver.prototype.GetAvatarByDIDName = function (didName, overrides, chainRpc) {
+    HashKeyDID.prototype.GetAvatarByDIDName = function (didName, overrides, chainRpc) {
         if (overrides === void 0) { overrides = {}; }
         return __awaiter(this, void 0, void 0, function () {
             var res, tokenId, avatarText;
@@ -381,7 +619,7 @@ var Resolver = /** @class */ (function () {
                         return [4 /*yield*/, this.didContract.did2TokenId(didName, overrides)];
                     case 2:
                         tokenId = _a.sent();
-                        return [4 /*yield*/, this.contract.text(tokenId, "avatar", overrides)];
+                        return [4 /*yield*/, this.resolverContract.text(tokenId, "avatar", overrides)];
                     case 3:
                         avatarText = _a.sent();
                         if (avatarText == "") {
@@ -400,13 +638,13 @@ var Resolver = /** @class */ (function () {
      * @param {CallOverrides} [overrides] Note block number, eg: {"blockTag": 36513266}
      * @return {promise<string>} return avatar url
      */
-    Resolver.prototype.GetAvatarByTokenId = function (tokenId, overrides, chainRpc) {
+    HashKeyDID.prototype.GetAvatarByTokenId = function (tokenId, overrides, chainRpc) {
         if (overrides === void 0) { overrides = {}; }
         return __awaiter(this, void 0, void 0, function () {
             var avatarText;
             return __generator(this, function (_a) {
                 switch (_a.label) {
-                    case 0: return [4 /*yield*/, this.contract.text(tokenId, "avatar", overrides)];
+                    case 0: return [4 /*yield*/, this.resolverContract.text(tokenId, "avatar", overrides)];
                     case 1:
                         avatarText = _a.sent();
                         if (avatarText == "") {
@@ -425,7 +663,7 @@ var Resolver = /** @class */ (function () {
      * @param {string} [chainRpc] eg: "https://eth-mainnet.nodereal.io/v1/1659dfb40aa24bbb8153a677b98064d7"
      * @return {promise<string>} return image url
      */
-    Resolver.prototype.AvatarFormatText2AvatarUrl = function (formatText, chainRpc) {
+    HashKeyDID.prototype.AvatarFormatText2AvatarUrl = function (formatText, chainRpc) {
         return __awaiter(this, void 0, void 0, function () {
             var texts, _a, tokenURI, _b, nft721, nft1155, image;
             return __generator(this, function (_c) {
@@ -446,7 +684,7 @@ var Resolver = /** @class */ (function () {
                             return [2 /*return*/, errors_1.Error.ErrInvalidAvatarText];
                         }
                         if (chainRpc == undefined) {
-                            chainRpc = setting.ChainRPCMap.get(texts[1]);
+                            chainRpc = config_1.ChainRPCMap.get(texts[1]);
                             if (chainRpc == "") {
                                 return [2 /*return*/, errors_1.Error.ErrInvalidAvatarText];
                             }
@@ -489,7 +727,7 @@ var Resolver = /** @class */ (function () {
      * @param {string} tokenURI eg: https://arweave.net/qMWNCxhao7TGWnj8axed0YzLU1gx8-5yP1W1gBHNVFg
      * @return {promise<string>} return image url
      */
-    Resolver.prototype.GetImageFromTokenURI = function (tokenURI) {
+    HashKeyDID.prototype.GetImageFromTokenURI = function (tokenURI) {
         return __awaiter(this, void 0, void 0, function () {
             var response, e_1;
             return __generator(this, function (_a) {
@@ -514,7 +752,7 @@ var Resolver = /** @class */ (function () {
      * @param {number | bigint | BigNumber | string} tokenId eg: 1
      * @return {Promise<DIDMateData>} response json format
      */
-    Resolver.prototype.GetMetadata = function (tokenId) {
+    HashKeyDID.prototype.GetMetadata = function (tokenId) {
         return __awaiter(this, void 0, void 0, function () {
             var MetadataUrl, response;
             return __generator(this, function (_a) {
@@ -535,7 +773,7 @@ var Resolver = /** @class */ (function () {
      * @param {number | bigint | BigNumber | string} tokenId eg: 1
      * @return {promise<string>} return metadata image url
      */
-    Resolver.prototype.GetMetadataImage = function (tokenId) {
+    HashKeyDID.prototype.GetMetadataImage = function (tokenId) {
         return __awaiter(this, void 0, void 0, function () {
             var metadata;
             return __generator(this, function (_a) {
@@ -554,7 +792,7 @@ var Resolver = /** @class */ (function () {
      * @param {number | bigint | BigNumber | string} tokenId eg: 1
      * @return {promise<string>} return metadata name
      */
-    Resolver.prototype.GetMetadataName = function (tokenId) {
+    HashKeyDID.prototype.GetMetadataName = function (tokenId) {
         return __awaiter(this, void 0, void 0, function () {
             var metadata;
             return __generator(this, function (_a) {
@@ -573,7 +811,7 @@ var Resolver = /** @class */ (function () {
      * @param {number | bigint | BigNumber | string} tokenId eg: 1
      * @return {promise<string>} return metadata description
      */
-    Resolver.prototype.GetMetadataDescription = function (tokenId) {
+    HashKeyDID.prototype.GetMetadataDescription = function (tokenId) {
         return __awaiter(this, void 0, void 0, function () {
             var metadata;
             return __generator(this, function (_a) {
@@ -586,7 +824,7 @@ var Resolver = /** @class */ (function () {
             });
         });
     };
-    return Resolver;
+    return HashKeyDID;
 }());
-exports.Resolver = Resolver;
-//# sourceMappingURL=resolver.js.map
+exports.HashKeyDID = HashKeyDID;
+//# sourceMappingURL=did.js.map

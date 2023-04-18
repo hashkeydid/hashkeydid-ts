@@ -1,8 +1,8 @@
 import {expect} from "chai";
-import {Avatar} from "./avatar";
+import {HashKeyDID, NewHashKeyDID} from "./did";
 
 describe("DID avatar test", async () => {
-    const avatar = new Avatar();
+    let avatar: HashKeyDID;
 
     let didName;
     let tokenId;
@@ -10,6 +10,7 @@ describe("DID avatar test", async () => {
     let nft1155;
 
     before(async () => {
+        avatar = await NewHashKeyDID("https://openapi2.platon.network/rpc")
         didName = "herro.key";
         tokenId = 13756;
         nft721 = "nft:1:721:0x394E3d3044fC89fCDd966D3cb35Ac0B32B0Cda91:8619";
@@ -17,17 +18,20 @@ describe("DID avatar test", async () => {
     })
 
     it("Get DID metadata avatar by did", async () => {
-        let avatarUrl = await avatar.GetMetadataImageByDIDName(didName, {blockTag: 36513265});
-        expect(avatarUrl).equal("this did name has not been claimed");
+        let err1;
+        await avatar.GetMetadataImageByDIDName(didName, {blockTag: 36513265})
+            .catch(err => {
+                err1 = err
+            });
+        expect(err1).equal("this did name has not been claimed");
 
         let overrides = {blockTag: 36513266};
-        avatarUrl = await avatar.GetMetadataImageByDIDName(didName, overrides);
+        let avatarUrl = await avatar.GetMetadataImageByDIDName(didName, overrides);
         expect(avatarUrl).equal("https://api.hashkey.id/did/api/file/avatar_3619b3aa-7979-4d10-a1ea-e6725ab8096e.png");
     }).timeout(10000);
 
     it("Get DID metadata avatar by tokenId", async () => {
-        let overrides = {"blockTag": 36513266};
-        let avatarUrl = await avatar.GetMetadataImageByTokenId(tokenId, overrides);
+        let avatarUrl = await avatar.GetMetadataImageByTokenId(tokenId);
         expect(avatarUrl).equal("https://api.hashkey.id/did/api/file/avatar_3619b3aa-7979-4d10-a1ea-e6725ab8096e.png");
     }).timeout(10000);
 

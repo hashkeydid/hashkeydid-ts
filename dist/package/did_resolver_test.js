@@ -37,140 +37,110 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 var chai_1 = require("chai");
+var errors_1 = require("../error/errors");
 var did_1 = require("./did");
-describe("hashkeyDID test", function () { return __awaiter(void 0, void 0, void 0, function () {
-    var did, didName, tokenId, authorizedAddr;
+describe("DIDResolver test", function () { return __awaiter(void 0, void 0, void 0, function () {
+    var tokenId, resolver;
     return __generator(this, function (_a) {
         before(function () { return __awaiter(void 0, void 0, void 0, function () {
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0: return [4 /*yield*/, (0, did_1.NewHashKeyDID)("https://openapi2.platon.network/rpc")];
                     case 1:
-                        did = _a.sent();
+                        resolver = _a.sent();
                         tokenId = 13756;
-                        didName = "herro.key";
-                        authorizedAddr = "0xa060C1C3807059027Ca141EFb63f19E12e0cBF0c";
                         return [2 /*return*/];
                 }
             });
         }); });
-        it("Get addr by DID name", function () { return __awaiter(void 0, void 0, void 0, function () {
-            var addr;
+        it("Get DID name when reverse is false", function () { return __awaiter(void 0, void 0, void 0, function () {
+            var e_1;
             return __generator(this, function (_a) {
                 switch (_a.label) {
-                    case 0: return [4 /*yield*/, did.GetAddrByDIDName(didName)];
+                    case 0:
+                        _a.trys.push([0, 2, , 3]);
+                        return [4 /*yield*/, resolver.GetDIDNameByAddr("0xa060C1C3807059027Ca141EFb63f19E12e0cBF0c")];
                     case 1:
-                        addr = _a.sent();
-                        (0, chai_1.expect)(addr).equal("0xB45c5Eac26AF321dd9C02693418976F52E1219b6");
+                        _a.sent();
+                        return [3 /*break*/, 3];
+                    case 2:
+                        e_1 = _a.sent();
+                        (0, chai_1.expect)(e_1.reason).equal(errors_1.Error.ErrAddrNotSetReverse);
+                        return [3 /*break*/, 3];
+                    case 3: return [2 /*return*/];
+                }
+            });
+        }); }).timeout(100000);
+        it("Get DID name force when reverse is false, and set block height", function () { return __awaiter(void 0, void 0, void 0, function () {
+            var overrides, result;
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0:
+                        overrides = { "blockTag": 36513266 };
+                        return [4 /*yield*/, resolver.GetDIDNameByAddrForce("0xB45c5Eac26AF321dd9C02693418976F52E1219b6", overrides)];
+                    case 1:
+                        result = _a.sent();
+                        (0, chai_1.expect)(result).equal("herro.key");
+                        overrides = { "blockTag": 36513264 };
+                        return [4 /*yield*/, resolver.GetDIDNameByAddrForce("0xB45c5Eac26AF321dd9C02693418976F52E1219b6", overrides)];
+                    case 2:
+                        result = _a.sent();
+                        (0, chai_1.expect)(result).equal("this addr has not claimed a did");
                         return [2 /*return*/];
                 }
             });
         }); }).timeout(100000);
-        it("Verify did format", function () { return __awaiter(void 0, void 0, void 0, function () {
-            var did1, result;
+        it("Get blockchain address", function () { return __awaiter(void 0, void 0, void 0, function () {
+            var result;
             return __generator(this, function (_a) {
                 switch (_a.label) {
-                    case 0:
-                        did1 = "xxx.key1";
-                        return [4 /*yield*/, did.VerifyDIDFormat(did1)];
+                    case 0: return [4 /*yield*/, resolver.GetBlockChainAddress(tokenId, 1)];
                     case 1:
                         result = _a.sent();
-                        (0, chai_1.expect)(result).false;
+                        (0, chai_1.expect)(result).equal("0xb45c5eac26af321dd9c02693418976f52e1219b6");
                         return [2 /*return*/];
                 }
             });
         }); }).timeout(100000);
-        it("Get did authorized addresses", function () { return __awaiter(void 0, void 0, void 0, function () {
+        it("Get content value", function () { return __awaiter(void 0, void 0, void 0, function () {
             var result;
             return __generator(this, function (_a) {
                 switch (_a.label) {
-                    case 0: return [4 /*yield*/, did.GetAuthorizedAddrs(tokenId)];
+                    case 0: return [4 /*yield*/, resolver.GetContentHash(tokenId)];
                     case 1:
                         result = _a.sent();
-                        (0, chai_1.expect)(result[0]).equal(authorizedAddr);
+                        (0, chai_1.expect)(result).equal("0x1234");
                         return [2 /*return*/];
                 }
             });
-        }); }).timeout(10000);
-        it("Check did authorized address", function () { return __awaiter(void 0, void 0, void 0, function () {
+        }); }).timeout(100000);
+        //
+        it("Get public key", function () { return __awaiter(void 0, void 0, void 0, function () {
             var result;
             return __generator(this, function (_a) {
                 switch (_a.label) {
-                    case 0: return [4 /*yield*/, did.IsAddrAuthorized(tokenId, authorizedAddr)];
+                    case 0: return [4 /*yield*/, resolver.GetPublicKey(tokenId)];
                     case 1:
                         result = _a.sent();
-                        (0, chai_1.expect)(result).true;
+                        (0, chai_1.expect)(result[0]).equal("0x0000000000000000000000000000000000000000000000000000000000000003");
+                        (0, chai_1.expect)(result[1]).equal("0x0000000000000000000000000000000000000000000000000000000000000004");
                         return [2 /*return*/];
                 }
             });
-        }); }).timeout(10000);
-        it("Get KYC information", function () { return __awaiter(void 0, void 0, void 0, function () {
-            var token, KYCProvider, KYCId, result;
-            return __generator(this, function (_a) {
-                switch (_a.label) {
-                    case 0:
-                        token = 5945;
-                        KYCProvider = "0x0FC1021d0B7111f2170d1183367AAcaC26c68888";
-                        KYCId = 2;
-                        return [4 /*yield*/, did.GetKYCInfo(token, KYCProvider, KYCId)];
-                    case 1:
-                        result = _a.sent();
-                        (0, chai_1.expect)(result[0]).true;
-                        (0, chai_1.expect)(result[1].toNumber()).equal(1642193640);
-                        (0, chai_1.expect)(result[2].toNumber()).equal(1705265640);
-                        return [2 /*return*/];
-                }
-            });
-        }); }).timeout(10000);
-        it("Check if did has already claimed", function () { return __awaiter(void 0, void 0, void 0, function () {
+        }); }).timeout(100000);
+        it("Get value by key", function () { return __awaiter(void 0, void 0, void 0, function () {
             var result;
             return __generator(this, function (_a) {
                 switch (_a.label) {
-                    case 0: return [4 /*yield*/, did.DidClaimed(didName)];
+                    case 0: return [4 /*yield*/, resolver.Text(tokenId, "name")];
                     case 1:
                         result = _a.sent();
-                        (0, chai_1.expect)(result).true;
+                        (0, chai_1.expect)(result).equal("咚咚咚");
                         return [2 /*return*/];
                 }
             });
-        }); }).timeout(10000);
-        it("Check if address has already claimed", function () { return __awaiter(void 0, void 0, void 0, function () {
-            var result;
-            return __generator(this, function (_a) {
-                switch (_a.label) {
-                    case 0: return [4 /*yield*/, did.AddrClaimed(authorizedAddr)];
-                    case 1:
-                        result = _a.sent();
-                        (0, chai_1.expect)(result).true;
-                        return [2 /*return*/];
-                }
-            });
-        }); }).timeout(10000);
-        it("Get tokenId by did", function () { return __awaiter(void 0, void 0, void 0, function () {
-            var result;
-            return __generator(this, function (_a) {
-                switch (_a.label) {
-                    case 0: return [4 /*yield*/, did.TokenId2Did(tokenId)];
-                    case 1:
-                        result = _a.sent();
-                        (0, chai_1.expect)(result).equal(didName);
-                        return [2 /*return*/];
-                }
-            });
-        }); }).timeout(10000);
-        it("Get did by tokenId", function () { return __awaiter(void 0, void 0, void 0, function () {
-            var result;
-            return __generator(this, function (_a) {
-                switch (_a.label) {
-                    case 0: return [4 /*yield*/, did.Did2TokenId(didName)];
-                    case 1:
-                        result = _a.sent();
-                        (0, chai_1.expect)(result.toNumber()).equal(tokenId);
-                        return [2 /*return*/];
-                }
-            });
-        }); }).timeout(10000);
+        }); }).timeout(100000);
         return [2 /*return*/];
     });
 }); });
-//# sourceMappingURL=did_test.js.map
+//# sourceMappingURL=did_resolver_test.js.map

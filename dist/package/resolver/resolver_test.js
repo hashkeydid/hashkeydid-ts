@@ -44,52 +44,35 @@ describe("DIDResolver test", function () { return __awaiter(void 0, void 0, void
     return __generator(this, function (_a) {
         before(function () { return __awaiter(void 0, void 0, void 0, function () {
             return __generator(this, function (_a) {
-                resolver = new resolver_1.Resolver({ privateKey: "f3db6526e98e79c7bd1dcadfa15a01e1de5c7293669608f90b9230581047cbc4" });
-                tokenId = 13756;
-                didName = "herro.key";
-                authorizedAddr = "0xa060C1C3807059027Ca141EFb63f19E12e0cBF0c";
-                return [2 /*return*/];
-            });
-        }); });
-        it("Set reverse is false", function () { return __awaiter(void 0, void 0, void 0, function () {
-            var tx;
-            return __generator(this, function (_a) {
                 switch (_a.label) {
-                    case 0: return [4 /*yield*/, resolver.SetReverse(false)];
+                    case 0: return [4 /*yield*/, (0, resolver_1.NewHashKeyDIDResolver)("https://openapi2.platon.network/rpc", { privateKey: "f3db6526e98e79c7bd1dcadfa15a01e1de5c7293669608f90b9230581047cbc4" })];
                     case 1:
-                        tx = _a.sent();
+                        resolver = _a.sent();
+                        tokenId = 13756;
+                        didName = "herro.key";
+                        authorizedAddr = "0xa060C1C3807059027Ca141EFb63f19E12e0cBF0c";
+                        return [4 /*yield*/, resolver.WalletAddress()];
+                    case 2:
+                        address = _a.sent();
                         return [2 /*return*/];
                 }
             });
-        }); }).timeout(1000000);
+        }); });
         it("Get DID name when reverse is false", function () { return __awaiter(void 0, void 0, void 0, function () {
-            var _a, e_1;
-            return __generator(this, function (_b) {
-                switch (_b.label) {
+            var e_1;
+            return __generator(this, function (_a) {
+                switch (_a.label) {
                     case 0:
-                        _b.trys.push([0, 2, , 3]);
-                        _a = chai_1.expect;
+                        _a.trys.push([0, 2, , 3]);
                         return [4 /*yield*/, resolver.GetDIDNameByAddr("0xa060C1C3807059027Ca141EFb63f19E12e0cBF0c")];
                     case 1:
-                        _a.apply(void 0, [_b.sent()]);
+                        _a.sent();
                         return [3 /*break*/, 3];
                     case 2:
-                        e_1 = _b.sent();
+                        e_1 = _a.sent();
                         (0, chai_1.expect)(e_1.reason).equal(errors_1.Error.ErrAddrNotSetReverse);
                         return [3 /*break*/, 3];
                     case 3: return [2 /*return*/];
-                }
-            });
-        }); }).timeout(100000);
-        it("Get DID name when reverse is true", function () { return __awaiter(void 0, void 0, void 0, function () {
-            var result;
-            return __generator(this, function (_a) {
-                switch (_a.label) {
-                    case 0: return [4 /*yield*/, resolver.GetDIDNameByAddr(address)];
-                    case 1:
-                        result = _a.sent();
-                        (0, chai_1.expect)(result).equal("herro.key");
-                        return [2 /*return*/];
                 }
             });
         }); }).timeout(100000);
@@ -107,7 +90,7 @@ describe("DIDResolver test", function () { return __awaiter(void 0, void 0, void
                         return [4 /*yield*/, resolver.GetDIDNameByAddrForce(address, overrides)];
                     case 2:
                         result = _a.sent();
-                        (0, chai_1.expect)(result).equal(undefined);
+                        (0, chai_1.expect)(result).equal("this addr has not claimed a did");
                         return [2 /*return*/];
                 }
             });
@@ -116,14 +99,8 @@ describe("DIDResolver test", function () { return __awaiter(void 0, void 0, void
             var result;
             return __generator(this, function (_a) {
                 switch (_a.label) {
-                    case 0: 
-                    // set address
-                    return [4 /*yield*/, resolver.SetBlockChainAddress(tokenId, 1, "0xb45c5eac26af321dd9c02693418976f52e1219b6")];
+                    case 0: return [4 /*yield*/, resolver.GetBlockChainAddress(tokenId, 1)];
                     case 1:
-                        // set address
-                        _a.sent();
-                        return [4 /*yield*/, resolver.GetBlockChainAddress(tokenId, 1)];
-                    case 2:
                         result = _a.sent();
                         (0, chai_1.expect)(result).equal("0xb45c5eac26af321dd9c02693418976f52e1219b6");
                         return [2 /*return*/];
@@ -134,32 +111,21 @@ describe("DIDResolver test", function () { return __awaiter(void 0, void 0, void
             var result;
             return __generator(this, function (_a) {
                 switch (_a.label) {
-                    case 0: 
-                    // set content
-                    return [4 /*yield*/, resolver.SetContentHash(tokenId, "0x1234")];
+                    case 0: return [4 /*yield*/, resolver.GetContentHash(tokenId)];
                     case 1:
-                        // set content
-                        _a.sent();
-                        return [4 /*yield*/, resolver.GetContentHash(tokenId)];
-                    case 2:
                         result = _a.sent();
                         (0, chai_1.expect)(result).equal("0x1234");
                         return [2 /*return*/];
                 }
             });
         }); }).timeout(100000);
+        //
         it("Get public key", function () { return __awaiter(void 0, void 0, void 0, function () {
             var result;
             return __generator(this, function (_a) {
                 switch (_a.label) {
-                    case 0: 
-                    // set pubkey
-                    return [4 /*yield*/, resolver.SetPubkey(tokenId, "0x0000000000000000000000000000000000000000000000000000000000000003", "0x0000000000000000000000000000000000000000000000000000000000000004")];
+                    case 0: return [4 /*yield*/, resolver.GetPublicKey(tokenId)];
                     case 1:
-                        // set pubkey
-                        _a.sent();
-                        return [4 /*yield*/, resolver.GetPublicKey(tokenId)];
-                    case 2:
                         result = _a.sent();
                         (0, chai_1.expect)(result[0]).equal("0x0000000000000000000000000000000000000000000000000000000000000003");
                         (0, chai_1.expect)(result[1]).equal("0x0000000000000000000000000000000000000000000000000000000000000004");
@@ -171,13 +137,10 @@ describe("DIDResolver test", function () { return __awaiter(void 0, void 0, void
             var result;
             return __generator(this, function (_a) {
                 switch (_a.label) {
-                    case 0: return [4 /*yield*/, resolver.SetText(tokenId, "name", "herro")];
+                    case 0: return [4 /*yield*/, resolver.Text(tokenId, "name")];
                     case 1:
-                        _a.sent();
-                        return [4 /*yield*/, resolver.Text(tokenId, "name")];
-                    case 2:
                         result = _a.sent();
-                        (0, chai_1.expect)(result).equal("herro");
+                        (0, chai_1.expect)(result).equal("咚咚咚");
                         return [2 /*return*/];
                 }
             });

@@ -37,135 +37,138 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 var chai_1 = require("chai");
-var did_1 = require("./did");
-describe("hashkeyDID test", function () { return __awaiter(void 0, void 0, void 0, function () {
-    var did, didName, tokenId, authorizedAddr;
+var resolver_1 = require("./resolver");
+describe("DID avatar test", function () { return __awaiter(void 0, void 0, void 0, function () {
+    var avatar, didName, tokenId, nft721, nft1155;
     return __generator(this, function (_a) {
         before(function () { return __awaiter(void 0, void 0, void 0, function () {
             return __generator(this, function (_a) {
                 switch (_a.label) {
-                    case 0: return [4 /*yield*/, (0, did_1.NewHashKeyDID)("https://openapi2.platon.network/rpc")];
+                    case 0: return [4 /*yield*/, (0, resolver_1.NewHashKeyDIDResolver)("https://openapi2.platon.network/rpc")];
                     case 1:
-                        did = _a.sent();
-                        tokenId = 13756;
+                        avatar = _a.sent();
                         didName = "herro.key";
-                        authorizedAddr = "0xa060C1C3807059027Ca141EFb63f19E12e0cBF0c";
+                        tokenId = 13756;
+                        nft721 = "nft:1:721:0x394E3d3044fC89fCDd966D3cb35Ac0B32B0Cda91:8619";
+                        nft1155 = "nft:1:1155:0xf4dd946d1406e215a87029db56c69e1bcf3e1773:1";
                         return [2 /*return*/];
                 }
             });
         }); });
-        it("Get addr by DID name", function () { return __awaiter(void 0, void 0, void 0, function () {
-            var addr;
+        it("Get DID metadata avatar by did", function () { return __awaiter(void 0, void 0, void 0, function () {
+            var err1, overrides, avatarUrl;
             return __generator(this, function (_a) {
                 switch (_a.label) {
-                    case 0: return [4 /*yield*/, did.GetAddrByDIDName(didName)];
+                    case 0: return [4 /*yield*/, avatar.GetMetadataImageByDIDName(didName, { blockTag: 36513265 })
+                            .catch(function (err) {
+                            err1 = err;
+                        })];
                     case 1:
-                        addr = _a.sent();
-                        (0, chai_1.expect)(addr).equal("0xB45c5Eac26AF321dd9C02693418976F52E1219b6");
+                        _a.sent();
+                        (0, chai_1.expect)(err1).equal("this did name has not been claimed");
+                        overrides = { blockTag: 36513266 };
+                        return [4 /*yield*/, avatar.GetMetadataImageByDIDName(didName, overrides)];
+                    case 2:
+                        avatarUrl = _a.sent();
+                        (0, chai_1.expect)(avatarUrl).equal("https://api.hashkey.id/did/api/file/avatar_3619b3aa-7979-4d10-a1ea-e6725ab8096e.png");
+                        return [2 /*return*/];
+                }
+            });
+        }); }).timeout(10000);
+        it("Get DID metadata avatar by tokenId", function () { return __awaiter(void 0, void 0, void 0, function () {
+            var avatarUrl;
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0: return [4 /*yield*/, avatar.GetMetadataImageByTokenId(tokenId)];
+                    case 1:
+                        avatarUrl = _a.sent();
+                        (0, chai_1.expect)(avatarUrl).equal("https://api.hashkey.id/did/api/file/avatar_3619b3aa-7979-4d10-a1ea-e6725ab8096e.png");
+                        return [2 /*return*/];
+                }
+            });
+        }); }).timeout(10000);
+        it("Get DID avatar by did", function () { return __awaiter(void 0, void 0, void 0, function () {
+            var result;
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0: return [4 /*yield*/, avatar.GetAvatarByDIDName(didName)];
+                    case 1:
+                        result = _a.sent();
+                        (0, chai_1.expect)(result).equal("https://arweave.net/qMWNCxhao7TGWnj8axed0YzLU1gx8-5yP1W1gBHNVFg");
+                        return [2 /*return*/];
+                }
+            });
+        }); }).timeout(10000);
+        it("Get DID avatar by tokenId", function () { return __awaiter(void 0, void 0, void 0, function () {
+            var result;
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0: return [4 /*yield*/, avatar.GetAvatarByTokenId(tokenId)];
+                    case 1:
+                        result = _a.sent();
+                        (0, chai_1.expect)(result).equal("https://arweave.net/qMWNCxhao7TGWnj8axed0YzLU1gx8-5yP1W1gBHNVFg");
+                        return [2 /*return*/];
+                }
+            });
+        }); }).timeout(10000);
+        it("Get avatar by url", function () { return __awaiter(void 0, void 0, void 0, function () {
+            var result;
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0: return [4 /*yield*/, avatar.AvatarFormatText2AvatarUrl(nft721)];
+                    case 1:
+                        result = _a.sent();
+                        (0, chai_1.expect)(result).equal("https://nfts.renga.app/nfts/public/images/8619.jpeg");
                         return [2 /*return*/];
                 }
             });
         }); }).timeout(100000);
-        it("Verify did format", function () { return __awaiter(void 0, void 0, void 0, function () {
-            var did1, result;
-            return __generator(this, function (_a) {
-                switch (_a.label) {
-                    case 0:
-                        did1 = "xxx.key1";
-                        return [4 /*yield*/, did.VerifyDIDFormat(did1)];
-                    case 1:
-                        result = _a.sent();
-                        (0, chai_1.expect)(result).false;
-                        return [2 /*return*/];
-                }
-            });
-        }); }).timeout(100000);
-        it("Get did authorized addresses", function () { return __awaiter(void 0, void 0, void 0, function () {
+        it("Get metadata by tokenId", function () { return __awaiter(void 0, void 0, void 0, function () {
             var result;
             return __generator(this, function (_a) {
                 switch (_a.label) {
-                    case 0: return [4 /*yield*/, did.GetAuthorizedAddrs(tokenId)];
+                    case 0: return [4 /*yield*/, avatar.GetMetadata(tokenId)];
                     case 1:
                         result = _a.sent();
-                        (0, chai_1.expect)(result[0]).equal(authorizedAddr);
+                        (0, chai_1.expect)(result.description).equal("Your Passport in the Metaverse");
+                        (0, chai_1.expect)(result.image).equal("https://api.hashkey.id/did/api/file/avatar_3619b3aa-7979-4d10-a1ea-e6725ab8096e.png");
+                        (0, chai_1.expect)(result.name).equal("herro.key");
                         return [2 /*return*/];
                 }
             });
         }); }).timeout(10000);
-        it("Check did authorized address", function () { return __awaiter(void 0, void 0, void 0, function () {
+        it("Get metadata image by tokenId", function () { return __awaiter(void 0, void 0, void 0, function () {
             var result;
             return __generator(this, function (_a) {
                 switch (_a.label) {
-                    case 0: return [4 /*yield*/, did.IsAddrAuthorized(tokenId, authorizedAddr)];
+                    case 0: return [4 /*yield*/, avatar.GetMetadataImage(tokenId)];
                     case 1:
                         result = _a.sent();
-                        (0, chai_1.expect)(result).true;
+                        (0, chai_1.expect)(result).equal("https://api.hashkey.id/did/api/file/avatar_3619b3aa-7979-4d10-a1ea-e6725ab8096e.png");
                         return [2 /*return*/];
                 }
             });
         }); }).timeout(10000);
-        it("Get KYC information", function () { return __awaiter(void 0, void 0, void 0, function () {
-            var token, KYCProvider, KYCId, result;
+        it("Get metadata name by tokenId", function () { return __awaiter(void 0, void 0, void 0, function () {
+            var result;
             return __generator(this, function (_a) {
                 switch (_a.label) {
-                    case 0:
-                        token = 5945;
-                        KYCProvider = "0x0FC1021d0B7111f2170d1183367AAcaC26c68888";
-                        KYCId = 2;
-                        return [4 /*yield*/, did.GetKYCInfo(token, KYCProvider, KYCId)];
+                    case 0: return [4 /*yield*/, avatar.GetMetadataName(tokenId)];
                     case 1:
                         result = _a.sent();
-                        (0, chai_1.expect)(result[0]).true;
-                        (0, chai_1.expect)(result[1].toNumber()).equal(1642193640);
-                        (0, chai_1.expect)(result[2].toNumber()).equal(1705265640);
+                        (0, chai_1.expect)(result).equal("herro.key");
                         return [2 /*return*/];
                 }
             });
         }); }).timeout(10000);
-        it("Check if did has already claimed", function () { return __awaiter(void 0, void 0, void 0, function () {
+        it("Get metadata description by tokenId", function () { return __awaiter(void 0, void 0, void 0, function () {
             var result;
             return __generator(this, function (_a) {
                 switch (_a.label) {
-                    case 0: return [4 /*yield*/, did.DidClaimed(didName)];
+                    case 0: return [4 /*yield*/, avatar.GetMetadataDescription(tokenId)];
                     case 1:
                         result = _a.sent();
-                        (0, chai_1.expect)(result).true;
-                        return [2 /*return*/];
-                }
-            });
-        }); }).timeout(10000);
-        it("Check if address has already claimed", function () { return __awaiter(void 0, void 0, void 0, function () {
-            var result;
-            return __generator(this, function (_a) {
-                switch (_a.label) {
-                    case 0: return [4 /*yield*/, did.AddrClaimed(authorizedAddr)];
-                    case 1:
-                        result = _a.sent();
-                        (0, chai_1.expect)(result).true;
-                        return [2 /*return*/];
-                }
-            });
-        }); }).timeout(10000);
-        it("Get tokenId by did", function () { return __awaiter(void 0, void 0, void 0, function () {
-            var result;
-            return __generator(this, function (_a) {
-                switch (_a.label) {
-                    case 0: return [4 /*yield*/, did.TokenId2Did(tokenId)];
-                    case 1:
-                        result = _a.sent();
-                        (0, chai_1.expect)(result).equal(didName);
-                        return [2 /*return*/];
-                }
-            });
-        }); }).timeout(10000);
-        it("Get did by tokenId", function () { return __awaiter(void 0, void 0, void 0, function () {
-            var result;
-            return __generator(this, function (_a) {
-                switch (_a.label) {
-                    case 0: return [4 /*yield*/, did.Did2TokenId(didName)];
-                    case 1:
-                        result = _a.sent();
-                        (0, chai_1.expect)(result.toNumber()).equal(tokenId);
+                        (0, chai_1.expect)(result).equal("Your Passport in the Metaverse");
                         return [2 /*return*/];
                 }
             });
@@ -173,4 +176,4 @@ describe("hashkeyDID test", function () { return __awaiter(void 0, void 0, void 
         return [2 /*return*/];
     });
 }); });
-//# sourceMappingURL=did_test.js.map
+//# sourceMappingURL=avater_test.js.map

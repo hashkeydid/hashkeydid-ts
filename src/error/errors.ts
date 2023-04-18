@@ -6,5 +6,6 @@ export const Error = {
     ErrAvatarNotSet: "the avatar text has not been set on this did",
     ErrInvalidAvatarText: "the avatar text is invalid",
     ErrInvalidTokenURI: "the tokenURI of avatar is invalid",
-    ErrOnlyRead: "without wallet"
+    ErrOnlyRead: "without wallet",
+    ErrNotSupport: "the chain has not been supported yet"
 }
