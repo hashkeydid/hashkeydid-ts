@@ -11,6 +11,10 @@
   ],
   "author": "",
   "license": "ISC",
+  "publishConfig": {
+    "registry": "https://registry.npmjs.org/"
+  },
+  "repository": "https://github.com/hashkeydid/hashkeydid-ts",
   "dependencies": {
     "axios": "^1.2.2",
     "chai": "^4.3.7",
